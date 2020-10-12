@@ -1,2 +1,2 @@
-# FLG_OSS_Rocket_League
+# FLG OSS for Rocket League
 Frontline Gaming OBS Smart Switcher for Rocket League
