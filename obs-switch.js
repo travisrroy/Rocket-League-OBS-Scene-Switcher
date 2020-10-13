@@ -4,10 +4,12 @@ const prompt = require('prompt');
 const { success, error, warn, info, log, indent } = require('cli-msg');
 const atob = require('atob');
 const _ = require("lodash");
+const { update } = require('lodash');
 
 const rocketLeagueHostname = 'localhost:49122'
+const OBSHostname = 'localhost:4444'
 
-function main() {
+function app() {
   /**
    * Rocket League WebSocket client
    * @type {WebSocket}
@@ -15,9 +17,17 @@ function main() {
   let wsClient;
   let obsClient;
   let gamestate = {};
+  let replayWillEnd = false;
 
   initOBSWebSocket();
   initRocketLeagueWebsocket(rocketLeagueHostname);
+
+  setInterval(function () {
+    if (!obsClient._connected) {
+        warn.wb("OBS WebSocket Server Closed. Attempting to reconnect");
+        initOBSWebSocket();
+    }
+  }, 10000);
 
   setInterval(function () {
       if (wsClient.readyState === WebSocket.CLOSED) {
@@ -29,14 +39,14 @@ function main() {
   function initOBSWebSocket() {
     obsClient = new OBSWebSocket();
     obsClient.connect({
-      address: 'localhost:4444',
+      address: OBSHostname,
     })
     .then(() => {
-        console.log(`Success! We're connected & authenticated.`);
+      success.wb("Connected to OBS on " + OBSHostname);
     })
     .catch(err => { // Promise convention dicates you have a catch on every chain.
-      console.log(err);
-  });
+      //console.log(err);
+    });
   }
 
   function initRocketLeagueWebsocket(rocketLeagueHostname) {
@@ -47,40 +57,52 @@ function main() {
       }
 
       wsClient.on("message", (d) => {
-        const { event, data } = JSON.parse(d);
-        if (event === "game:update_state") {
-          gamestate = data;
+        try {
+          const { event, data } = JSON.parse(d);
+
+          switch(event) {
+            case "game:match_created":
+              break;
+            case "game:initialized":
+              updateTransitionScene("Frontline_Slam", "Rocket League", 0);
+              break;
+            case "game:pre_countdown_begin":
+              break;
+            case "game:post_countdown_begin":
+              break;
+            case "game:update_state":
+              update_state(data);
+              break;
+            case "game:statfeed_event":
+              break;
+            case "game:goal_scored":
+              goal_scored(data);
+              break;
+            case "game:replay_start":
+              break;
+            case "game:replay_will_end":
+              replay_will_end();
+              break;
+            case "game:replay_end":
+              if (!replayWillEnd)
+                updateTransitionScene("Cut", "Rocket League", 0);
+              replayWillEnd = false;
+              break;
+            case "game:match_ended":
+              //console.log(data);
+              break;
+            case "game:podium_start":
+              updateTransitionScene("Frontline_Slam", "Stinger", 4250);
+              break;
+            case "game:match_destroyed":
+              updateTransitionScene("Frontline_Slam", "Intermission", 0);
+              break;
+            default:
+              // Event handler not needed
+          }
         }
-        else if (event === "game:goal_scored") {
-          const teamNum = gamestate.players[data.scorer.id].team; //0 = left, 1 = right
-          const teamObject = gamestate.game.teams[teamNum];
-
-          const teamName = _.capitalize(teamObject.name);
-          console.log(teamName);
-
-          obsClient.send('SetCurrentTransition', {
-            'transition-name': teamName
-          });
-
-          setTimeout(() => { 
-            obsClient.send('SetCurrentScene', {
-              'scene-name': teamName
-            });
-          }, 1250);
-        }
-        else if (event === "game:replay_will_end") {
-          obsClient.send('SetCurrentTransition', {
-            'transition-name': "Frontline_Fade"
-          });
-
-          setTimeout(() => { 
-            obsClient.send('SetCurrentScene', {
-              'scene-name': "Rocket League"
-            });
-            }, 1000);
-        }
-        else {
-          //console.log(event);
+        catch(e) {
+          error.wb(e);
         }
       });
 
@@ -88,6 +110,37 @@ function main() {
         error.wb(`Error connecting to Rocket League on host "${rocketLeagueHostname}"\nIs the plugin loaded into Rocket League? Run the command "plugin load sos" from the BakkesMod console to make sure`);
     };
   }
+
+  // Updating gamestate data to latest from server
+  function update_state(data) {
+    gamestate = data;
+  }
+
+  // 
+  function goal_scored(data) {
+    const teamNum = gamestate.players[data.scorer.id].team; //0 = left, 1 = right
+    const teamObject = gamestate.game.teams[teamNum];
+    const teamName = _.capitalize(teamObject.name);
+
+    updateTransitionScene(teamName, teamName, 1600);
+  }
+
+  function replay_will_end() {
+    replayWillEnd = true;
+    updateTransitionScene("Frontline_Fade", "Rocket League", 1250);
+  }
+
+  function updateTransitionScene(transitionName, sceneName, sceneDelay) {
+    obsClient.send('SetCurrentTransition', {
+      'transition-name': transitionName
+    });
+
+    setTimeout(() => { 
+      obsClient.send('SetCurrentScene', {
+        'scene-name': sceneName
+      });
+    }, sceneDelay);
+  }
 }
 
-main();
+app();
