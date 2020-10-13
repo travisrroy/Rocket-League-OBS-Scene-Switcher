@@ -92,9 +92,7 @@ function app() {
               replay_will_end();
               break;
             case "game:replay_end":
-              if (!replayWillEnd)
-                updateTransitionScene("Cut", "Rocket League", 0);
-              replayWillEnd = false;
+              replay_end();
               break;
             case "game:match_ended":
               //console.log(data);
@@ -136,6 +134,13 @@ function app() {
   function replay_will_end() {
     replayWillEnd = true;
     updateTransitionScene("Frontline_Fade", "Rocket League", 1250);
+  }
+
+  function replay_end() {
+    if (!replayWillEnd) {
+      updateTransitionScene("Cut", "Rocket League", 0);
+    }
+    replayWillEnd = false;
   }
 
   function updateTransitionScene(transitionName, sceneName, sceneDelay) {
