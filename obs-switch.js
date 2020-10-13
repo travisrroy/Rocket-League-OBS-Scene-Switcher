@@ -12,11 +12,13 @@ function app() {
   const rocketLeagueHostname = 'localhost:49122'
   const OBSHostname = 'localhost:4444'
 
+  // Websocket and OBS clients
   let wsClient;
   let obsClient;
-  let sceneList = [];
 
-  let gamestate = {};
+  let sceneList = []; // OBS scenes
+  let gamestate = {}; // The updated gamestate
+
   let replayWillEnd = false;
 
   initOBSWebSocket(OBSHostname);
@@ -64,6 +66,7 @@ function app() {
           success.wb("Connected to Rocket League on " + rocketLeagueHostname);
       }
 
+      // Callback to process every message sent on the websocket
       wsClient.on("message", (d) => {
         try {
           const { event, data } = JSON.parse(d);
@@ -117,6 +120,7 @@ function app() {
     gamestate = data;
   }
 
+  // Processing a goal that is scored and changing scene to the team that scored
   function goal_scored(data) {
     const teamNum = gamestate.players[data.scorer.id].team; //0 = left, 1 = right
     const teamObject = gamestate.game.teams[teamNum];
@@ -125,6 +129,8 @@ function app() {
     updateScene(teamName, 1600);
   }
 
+  // When the goal is scored in the replay, the replay_will_end event is fired
+  // This allows us to have a nice transition beack to the match after the replay ends
   function replay_will_end() {
     replayWillEnd = true;
 
@@ -135,12 +141,14 @@ function app() {
   }
 
   function replay_end() {
+    // If the replay is skipped by everyone, this returns the scene back to the match
     if (!replayWillEnd) {
       updateScene("Match", 0);
     }
     replayWillEnd = false;
   }
 
+  // Gets the winning team and changes the scene to the proper winning scene
   function match_ended(data) {
     const teamObject = gamestate.game.teams[data.winner_team_num];
     const winTeamScene = _.capitalize(teamObject.name) + " Win";
