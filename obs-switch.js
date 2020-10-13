@@ -75,7 +75,7 @@ function app() {
           */
             switch(event) {
             case "game:initialized":
-              updateTransitionScene("Frontline_Slam", "Rocket League", 0);
+              updateScene("Match", 0);
               break;
             case "game:update_state":
               update_state(data);
@@ -90,10 +90,10 @@ function app() {
               replay_end();
               break;
             case "game:podium_start":
-              updateTransitionScene("Frontline_Slam", "Stinger", 4250);
+              updateScene("End Match", 4250);
               break;
             case "game:match_destroyed":
-              updateTransitionScene("Frontline_Slam", "Intermission", 0);
+              updateScene("Intermission", 0);
               break;
             default:
               // Events not needed
@@ -114,32 +114,28 @@ function app() {
     gamestate = data;
   }
 
-  // 
   function goal_scored(data) {
     const teamNum = gamestate.players[data.scorer.id].team; //0 = left, 1 = right
     const teamObject = gamestate.game.teams[teamNum];
     const teamName = _.capitalize(teamObject.name);
 
-    updateTransitionScene(teamName, teamName, 1600);
+    updateScene(teamName, 1600);
   }
 
   function replay_will_end() {
     replayWillEnd = true;
-    updateTransitionScene("Frontline_Fade", "Rocket League", 1250);
+      updateScene("Match", 1250);
   }
 
   function replay_end() {
     if (!replayWillEnd) {
-      updateTransitionScene("Cut", "Rocket League", 0);
+      updateScene("Match", 0);
     }
     replayWillEnd = false;
   }
 
-  function updateTransitionScene(transitionName, sceneName, sceneDelay) {
-    obsClient.send('SetCurrentTransition', {
-      'transition-name': transitionName
-    });
 
+  function updateScene(sceneName, sceneDelay) {
     if(sceneList.includes(sceneName)){
       setTimeout(() => { 
         obsClient.send('SetCurrentScene', {
@@ -153,4 +149,5 @@ function app() {
   }
 }
 
+// Main entry of the application
 app();
