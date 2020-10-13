@@ -57,6 +57,11 @@ function app() {
     .catch(err => { // Promise convention dicates you have a catch on every chain.
       //console.log(err);
     });
+
+    // You must add this handler to avoid uncaught exceptions.
+    obsClient.on('error', err => {
+      error.wb('socket error:', err);
+    });
   }
 
   function initRocketLeagueWebsocket(rocketLeagueHostname) {
