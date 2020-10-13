@@ -89,6 +89,9 @@ function app() {
             case "game:replay_end":
               replay_end();
               break;
+            case "game:match_ended":
+              match_ended(data);
+              break;
             case "game:podium_start":
               updateScene("End Match", 4250);
               break;
@@ -124,7 +127,11 @@ function app() {
 
   function replay_will_end() {
     replayWillEnd = true;
+
+    // Zero second goal is scored or game is in Overtime, we don't want this scene
+    if (gamestate.game.time !== 0 && !gamestate.game.isOT) {
       updateScene("Match", 1250);
+    }
   }
 
   function replay_end() {
@@ -134,6 +141,12 @@ function app() {
     replayWillEnd = false;
   }
 
+  function match_ended(data) {
+    const teamObject = gamestate.game.teams[data.winner_team_num];
+    const winTeamScene = _.capitalize(teamObject.name) + " Win";
+    
+    updateScene(winTeamScene, 0);
+  }
 
   function updateScene(sceneName, sceneDelay) {
     if(sceneList.includes(sceneName)){
