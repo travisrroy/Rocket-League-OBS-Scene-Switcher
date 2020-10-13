@@ -68,34 +68,26 @@ function app() {
         try {
           const { event, data } = JSON.parse(d);
 
-          switch(event) {
-            case "game:match_created":
-              break;
+          /* List of SOS Events:
+          *  match_created, initialized, pre_countdown_begin, post_countdown_begin
+          *  update_state, statfeed_event, goal_scored, replay_start, replay_will_end
+          *  replay_end, match_ended, podium_start, match_destroyed
+          */
+            switch(event) {
             case "game:initialized":
               updateTransitionScene("Frontline_Slam", "Rocket League", 0);
-              break;
-            case "game:pre_countdown_begin":
-              break;
-            case "game:post_countdown_begin":
               break;
             case "game:update_state":
               update_state(data);
               break;
-            case "game:statfeed_event":
-              break;
             case "game:goal_scored":
               goal_scored(data);
-              break;
-            case "game:replay_start":
               break;
             case "game:replay_will_end":
               replay_will_end();
               break;
             case "game:replay_end":
               replay_end();
-              break;
-            case "game:match_ended":
-              //console.log(data);
               break;
             case "game:podium_start":
               updateTransitionScene("Frontline_Slam", "Stinger", 4250);
@@ -104,7 +96,7 @@ function app() {
               updateTransitionScene("Frontline_Slam", "Intermission", 0);
               break;
             default:
-              // Event handler not needed
+              // Events not needed
           }
         }
         catch(e) {
