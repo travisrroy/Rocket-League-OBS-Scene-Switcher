@@ -1,31 +1,31 @@
 const WebSocket = require('ws');
 const OBSWebSocket = require('obs-websocket-js');
-const prompt = require('prompt');
 const { success, error, warn, info, log, indent } = require('cli-msg');
-const atob = require('atob');
 const _ = require("lodash");
-const { update } = require('lodash');
-
-const rocketLeagueHostname = 'localhost:49122'
-const OBSHostname = 'localhost:4444'
 
 function app() {
   /**
    * Rocket League WebSocket client
    * @type {WebSocket}
    */
+
+  const rocketLeagueHostname = 'localhost:49122'
+  const OBSHostname = 'localhost:4444'
+
   let wsClient;
   let obsClient;
+  let sceneList = [];
+
   let gamestate = {};
   let replayWillEnd = false;
 
-  initOBSWebSocket();
+  initOBSWebSocket(OBSHostname);
   initRocketLeagueWebsocket(rocketLeagueHostname);
 
   setInterval(function () {
     if (!obsClient._connected) {
         warn.wb("OBS WebSocket Server Closed. Attempting to reconnect");
-        initOBSWebSocket();
+        initOBSWebSocket(OBSHostname);
     }
   }, 10000);
 
@@ -36,13 +36,21 @@ function app() {
       }
   }, 10000);
 
-  function initOBSWebSocket() {
+  function initOBSWebSocket(OBSHostname) {
     obsClient = new OBSWebSocket();
+
     obsClient.connect({
       address: OBSHostname,
     })
     .then(() => {
       success.wb("Connected to OBS on " + OBSHostname);
+
+      return obsClient.send('GetSceneList');
+    })
+    .then((data) => {
+      data.scenes.map((scene) => {
+        sceneList.push(scene.name)
+      });
     })
     .catch(err => { // Promise convention dicates you have a catch on every chain.
       //console.log(err);
@@ -135,11 +143,16 @@ function app() {
       'transition-name': transitionName
     });
 
-    setTimeout(() => { 
-      obsClient.send('SetCurrentScene', {
-        'scene-name': sceneName
-      });
-    }, sceneDelay);
+    if(sceneList.includes(sceneName)){
+      setTimeout(() => { 
+        obsClient.send('SetCurrentScene', {
+          'scene-name': sceneName
+        });
+      }, sceneDelay);
+    }
+    else {
+      warn.wb("Scene does not exist in OBS: " + sceneName);
+    }
   }
 }
 
