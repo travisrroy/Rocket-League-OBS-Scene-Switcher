@@ -2,9 +2,9 @@
   "name": "flg-obs-smart-switcher",
   "version": "1.0.0",
   "description": "Rocket League websocket that controls OBS",
-  "main": "obs-switch.js",
+  "main": "index.js",
   "scripts": {
-    "relay": "obs-switch.js"
+    "relay": "node index.js"
   },
   "author": "",
   "license": "MIT",
