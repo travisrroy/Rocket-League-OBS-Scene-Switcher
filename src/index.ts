@@ -1,9 +1,19 @@
-const WebSocket = require("ws");
-const OBSWebSocket = require("obs-websocket-js");
-const { success, error, warn, info, log, indent } = require("cli-msg");
-const _ = require("lodash");
+import { GameState, GoalScored, MatchEnded } from "./types"
+import WebSocket = require("ws");
+import OBSWebSocket = require("obs-websocket-js");
+const { success, error, warn } = require ("cli-msg");
+import _ = require("lodash");
 
 class App {
+  private OBSHostname: string;
+  private sceneList: string[];
+  private obsClient: OBSWebSocket | null;
+
+  private gameState: GameState;
+  private replayWillEnd: boolean;
+  private rocketLeagueHostname: string;
+  private wsClient: WebSocket | null;
+
   constructor() {
     // OBS Websocket
     this.OBSHostname = "localhost:4444";
@@ -31,38 +41,22 @@ class App {
     .then(() => {
       success.wb("Connected to OBS on " + this.OBSHostname);
 
-      return this.obsClient.send("GetSceneList");
+      return this.obsClient?.send("GetSceneList");
     })
-    .then((data) => {
-      data.scenes.map((scene) => {
+    .then((data: any) => {
+      data.scenes.map((scene: any) => {
         this.sceneList.push(scene.name)
       });
     })
     .catch(err => { // Promise convention dicates you have a catch on every chain.
-      //console.log(err);
-
-      if(err.code === "CONNECTION_ERROR"){
-        this.initOBSWebSocket();
-        warn.wb("OBS WebSocket Server Closed. Attempting to reconnect");
+      if(err.code !== "CONNECTION_ERROR"){
+        error.wb("Fatal error occurred: " + err.description);
       }
     });
 
-    // You must add this handler to avoid uncaught exceptions.
-    this.obsClient.on("error", (err) => {
-      if(err && err.code === "CONNECTION_ERROR"){
-        this.initOBSWebSocket();
-        warn.wb("OBS WebSocket Server Closed. Attempting to reconnect");
-      }
-      else {
-        error.wb("OBS websocket error:", err);
-      }
-    });
-
-    this.obsClient.on("ConnectionClosed", (err) => {
-      if(err && err.code === "CONNECTION_ERROR"){
-        this.initOBSWebSocket();
-        warn.wb("OBS WebSocket Server Closed. Attempting to reconnect");
-      }
+    this.obsClient.on("ConnectionClosed", () => {
+      this.initOBSWebSocket();
+      warn.wb("OBS WebSocket Server Closed. Attempting to reconnect");
     });
   }
 
@@ -74,7 +68,7 @@ class App {
     }
 
     // Callback to process every message sent on the websocket
-    this.wsClient.on("message", (d) => {
+    this.wsClient.on("message", (d: string) => {
       try {
         const { event, data } = JSON.parse(d);
 
@@ -88,7 +82,7 @@ class App {
             this.updateScene("Match", 0);
             break;
           case "game:update_state":
-            this.gamestate = data;
+            this.gameState = data;
             break;
           case "game:goal_scored":
             this.goal_scored(data);
@@ -117,8 +111,9 @@ class App {
       }
     });
 
-    this.wsClient.on("error", (err) => {
-      if(err && err.code === "ECONNREFUSED"){
+    this.wsClient.on("error", (err: Error) => {
+      console.log(err);
+      if(err?.name === "ECONNREFUSED"){
         this.initRocketLeagueWebsocket();
         warn.wb("Rocket League WebSocket Server Closed. Attempting to reconnect");
       }
@@ -132,10 +127,10 @@ class App {
   }
 
   // Processing a goal that is scored and changing scene to the team that scored
-  goal_scored = (data) => {
-    const teamNum = this.gamestate.players[data.scorer.id].team; //0 = left, 1 = right
-    const teamObject = this.gamestate.game.teams[teamNum];
-    const teamName = _.capitalize(teamObject.name);
+  goal_scored = (data: GoalScored) => {
+    const { teamnum } = data.scorer; //0 = left, 1 = right
+    const teamObject = this.gameState.game?.teams[teamnum];
+    const teamName = _.capitalize(teamObject?.name);
 
     this.updateScene(teamName, 1600);
   }
@@ -146,17 +141,11 @@ class App {
     this.replayWillEnd = true;
 
     // Zero second goal is scored or game is in Overtime, we don"t want this scene
-    if (this.gamestate.game.time !== 0 && !this.gamestate.game.isOT) {
+    if (this.gameState.game?.time !== 0 && !this.gameState.game?.isOT) {
       this.updateScene("Match", 1250);
     }
   }
 
-  /**
-   * @function replay_end
-   * @description 
-   * 
-   * @param {Object} data - 
-   */
   replay_end = () => {
     // If the replay is skipped by everyone, this returns the scene back to the match
     if (!this.replayWillEnd) {
@@ -166,17 +155,17 @@ class App {
   }
 
   // Gets the winning team and changes the scene to the proper winning scene
-  match_ended = (data) => {
-    const teamObject = this.gamestate.game.teams[data.winner_team_num];
-    const winTeamScene = _.capitalize(teamObject.name) + " Win";
+  match_ended = (data: MatchEnded) => {
+    const teamObject = this.gameState.game?.teams[data.winner_team_num];
+    const winTeamScene = _.capitalize(teamObject?.name) + " Win";
     
     this.updateScene(winTeamScene, 0);
   }
 
-  updateScene = (sceneName, sceneDelay) => {
+  updateScene = (sceneName: string, sceneDelay: number) => {
     if(this.sceneList.includes(sceneName)){
       setTimeout(() => { 
-        this.obsClient.send("SetCurrentScene", {
+        this.obsClient?.send("SetCurrentScene", {
           "scene-name": sceneName
         });
       }, sceneDelay);
@@ -190,3 +179,5 @@ class App {
 // Main entry of the application
 const app = new App();
 app.init();
+
+export default App;

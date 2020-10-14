@@ -1,9 +1,9 @@
-declare interface Team {
+export interface Team {
   name: string;
   score: number;
 }
 
-declare interface Game {
+export interface Game {
   ballSpeed: number;
   ballTeam: number;
   ballX: number;
@@ -11,7 +11,7 @@ declare interface Game {
   ballZ: number;
   hasTarget: boolean;
   hasWinner: boolean;
-  itOT: boolean;
+  isOT: boolean;
   isReplay: boolean;
   target: string;
   teams: Team[];
@@ -19,7 +19,7 @@ declare interface Game {
   winner: string;
 }
 
-declare interface Player {
+export interface Player {
   assists: number;
   attacker: string;
   boost: number;
@@ -54,13 +54,40 @@ declare interface Player {
   z: number;
 }
 
-declare interface Players {
+export interface Players {
   [key: string]: Player
 }
 
-declare interface GameState {
-  event: string;
-  game: Game
-  hasGame: boolean;
-  players: Players;
+export interface GameState {
+  event?: string;
+  game?: Game
+  hasGame?: boolean;
+  players?: Players;
+}
+
+export interface Scorer {
+  id: string;
+  name: string;
+  teamnum: number;
+}
+
+export interface BallLastTouch {
+  player: string;
+  speed: number;
+}
+
+export interface ImpactLocation {
+  X: number;
+  Y: number;
+}
+
+export interface GoalScored {
+  ball_last_touch: BallLastTouch;
+  goalspeed: number;
+  impact_location: ImpactLocation;
+  scorer: Scorer;
+}
+
+export interface MatchEnded {
+  winner_team_num: number;
 }
