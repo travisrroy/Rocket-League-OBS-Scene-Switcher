@@ -14,7 +14,7 @@ const configPath = path.resolve(".", "./configuration.json");
 /**
  * @function parseVariableName
  * @description Parses the variable name from the user's input and replaces it with what is contained in that variable
- * https://regex101.com/r/X9YMp2/1
+ * https://regex101.com/r/X9YMp2/2
  */
 const parseVariableName = (configVal: string, replaceVal: string, replaceKey: string = "teamName"): string => {
   const re = new RegExp(`\{${replaceKey}\}`)
