@@ -17,6 +17,11 @@ namespace ConfigurationTool
 			InitializeComponent();
 			_obs = new OBSWebsocket();
 
+            if (!File.Exists("configuration.json"))
+			{
+                File.Create("configuration.json");
+			}
+
             string json = File.ReadAllText("configuration.json");
             configOptions = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
 
