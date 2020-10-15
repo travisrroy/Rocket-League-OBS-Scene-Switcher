@@ -66,7 +66,11 @@ var _a = require("cli-msg"), success = _a.success, error = _a.error, warn = _a.w
 var _ = require("lodash");
 var fs = fsNode.promises;
 var configPath = path_1.default.resolve(".", "./configuration.json");
-// https://regex101.com/r/X9YMp2/1
+/**
+ * @function parseVariableName
+ * @description Parses the variable name from the user's input and replaces it with what is contained in that variable
+ * https://regex101.com/r/X9YMp2/2
+ */
 var parseVariableName = function (configVal, replaceVal, replaceKey) {
     if (replaceKey === void 0) { replaceKey = "teamName"; }
     var re = new RegExp("{" + replaceKey + "}");
@@ -75,11 +79,20 @@ var parseVariableName = function (configVal, replaceVal, replaceKey) {
 var App = /** @class */ (function () {
     function App() {
         var _this = this;
+        /**
+         * @method init
+         * @description Initializes and connects to the OBS websocket and Rocket League websocket
+         */
         this.init = function () {
             warn.wb("Please ensure that you have set the configuration with the configuration tool!");
             _this.initOBSWebSocket();
             _this.initRocketLeagueWebsocket();
         };
+        /**
+         * @method initOBSWebSocket
+         * @description Connects to the OBS websocket with credentials from config
+         * and retrieves the list of OBS scenes
+         */
         this.initOBSWebSocket = function () {
             _this.obsClient = new OBSWebSocket();
             _this.obsClient.connect({
@@ -102,20 +115,25 @@ var App = /** @class */ (function () {
                 }
             });
             _this.obsClient.on("ConnectionClosed", function () {
-                _this.initOBSWebSocket();
                 warn.wb("OBS WebSocket Server Closed. Attempting to reconnect");
+                _this.initOBSWebSocket();
             });
         };
+        /**
+         * @method initRocketLeagueWebsocket
+         * @description Connects to the OBS websocket with ip and port from config
+         * and creates an event callback for every message
+         */
         this.initRocketLeagueWebsocket = function () {
             _this.wsClient = new WebSocket("ws://" + _this.rocketLeagueHostname);
             _this.wsClient.onopen = function () {
                 success.wb("Connected to Rocket League on " + _this.rocketLeagueHostname);
             };
-            // Callback to process every message sent on the websocket
+            // Callback to process every message event sent from the websocket server
             _this.wsClient.on("message", function (d) {
                 try {
                     var _a = JSON.parse(d), event_1 = _a.event, data = _a.data;
-                    /* List of SOS Events:
+                    /* List of Rocket League SOS Events:
                     *  match_created, initialized, pre_countdown_begin, post_countdown_begin
                     *  update_state, statfeed_event, goal_scored, replay_start, replay_will_end
                     *  replay_end, match_ended, podium_start, match_destroyed
@@ -157,30 +175,41 @@ var App = /** @class */ (function () {
                     }
                 }
                 catch (e) {
-                    error.wb(e);
+                    error.wb("Error processing event message: " + e);
                 }
             });
             _this.wsClient.on("close", function () {
                 var _a;
                 if (((_a = _this.wsClient) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.CLOSED) {
-                    _this.initRocketLeagueWebsocket();
                     warn.wb("Rocket League WebSocket Server Closed. Attempting to reconnect");
+                    _this.initRocketLeagueWebsocket();
                 }
             });
             _this.wsClient.on("error", function () {
-                _this.initRocketLeagueWebsocket();
                 error.wb("Error connecting to Rocket League on host \"" +
                     (_this.rocketLeagueHostname + "\"\nIs the plugin loaded into ") +
                     "Rocket League? Run the command \"plugin load sos\" from the " +
                     "BakkesMod console to make sure");
+                _this.initRocketLeagueWebsocket();
             });
         };
+        /**
+         * @method update_state
+         * @description Updates the internal gamestate with the state tick from the server and
+         * determines when the next config update should occur
+         */
         this.update_state = function (data) {
             _this.gameState = data;
+            // Checking if time passed is greater than 2500ms since last update
             if (new Date().getTime() - _this.lastUpdate >= 2500) {
                 _this.read_config();
             }
         };
+        /**
+         * @method read_config
+         * @description Updates the internal gamestate with the state tick from the server and
+         * determines when the next config update should occur
+         */
         this.read_config = function () { return __awaiter(_this, void 0, void 0, function () {
             var rawData;
             return __generator(this, function (_a) {
@@ -193,7 +222,11 @@ var App = /** @class */ (function () {
                 }
             });
         }); };
-        // Processing a goal that is scored and changing scene to the team that scored
+        /**
+         * @method goal_scored
+         * @description Processing a goal that is scored and changing scene
+         * to a team specific scene of the team that scored
+         */
         this.goal_scored = function (data) {
             var _a;
             var teamnum = data.scorer.teamnum; //0 = left, 1 = right
@@ -202,8 +235,11 @@ var App = /** @class */ (function () {
             var scene = parseVariableName(_this.config.scenes.goal_scored, teamName);
             _this.updateScene(scene, _this.config.delays.goal_scored);
         };
-        // When the goal is scored in the replay, the replay_will_end event is fired
-        // This allows us to have a nice transition beack to the match after the replay ends
+        /**
+         * @method replay_will_end
+         * @description When the goal is scored in the replay, the replay_will_end event is fired.
+         * This allows us to have a nice transition back to the proper scene after the replay ends
+         */
         this.replay_will_end = function () {
             var _a, _b;
             _this.replayWillEnd = true;
@@ -212,14 +248,21 @@ var App = /** @class */ (function () {
                 _this.updateScene(_this.config.scenes.replay_will_end, _this.config.delays.replay_will_end);
             }
         };
+        /**
+         * @method replay_end
+         * @description Handles the event if the replay is skipped by everyone before
+         * the replay_will_end event is fired
+         */
         this.replay_end = function () {
-            // If the replay is skipped by everyone, this returns the scene back to the match
             if (!_this.replayWillEnd) {
                 _this.updateScene(_this.config.scenes.replay_end, _this.config.delays.replay_end);
             }
             _this.replayWillEnd = false;
         };
-        // Gets the winning team and changes the scene to the proper winning scene
+        /**
+         * @method match_ended
+         * @description Gets the winning team and changes the scene to the proper winning scene
+         */
         this.match_ended = function (data) {
             var _a;
             var teamObject = (_a = _this.gameState.game) === null || _a === void 0 ? void 0 : _a.teams[data.winner_team_num];
@@ -227,6 +270,11 @@ var App = /** @class */ (function () {
             var scene = parseVariableName(_this.config.scenes.match_ended, teamName);
             _this.updateScene(scene, _this.config.delays.match_ended);
         };
+        /**
+         * @method updateScene
+         * @description Checks if the scene exists in OBS and sets a timeout of sceneDelay length
+         * and changes the scene once the timeout is over
+         */
         this.updateScene = function (sceneName, sceneDelay) {
             if (_this.sceneList.includes(sceneName)) {
                 setTimeout(function () {
@@ -241,7 +289,7 @@ var App = /** @class */ (function () {
             }
         };
         try {
-            // Read from JSON
+            // Read from JSON configuration file
             this.config = JSON.parse(fsNode.readFileSync(configPath, "utf-8"));
         }
         catch (e) {

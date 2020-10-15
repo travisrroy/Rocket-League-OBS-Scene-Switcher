@@ -3,7 +3,7 @@ import WebSocket = require("ws");
 import OBSWebSocket = require("obs-websocket-js");
 import * as fsNode from "fs";
 import path from "path"
-const { success, error, warn } = require ("cli-msg");
+const { success, error, warn } = require("cli-msg");
 import _ = require("lodash");
 
 const fs = fsNode.promises;
@@ -98,7 +98,7 @@ class App {
     })
     .then((data: any) => { // Promise from send GetSceneList
       data.scenes.map((scene: any) => {
-        this.sceneList.push(scene.name)
+        this.sceneList.push(scene.name);
       });
     })
     .catch(err => { // Promise convention dicates you have a catch on every chain.
@@ -108,15 +108,15 @@ class App {
     });
 
     this.obsClient.on("ConnectionClosed", () => {
-      this.initOBSWebSocket();
       warn.wb("OBS WebSocket Server Closed. Attempting to reconnect");
+      this.initOBSWebSocket();
     });
   }
 
 
 
   /**
-   * @method initOBSWebSocket
+   * @method initRocketLeagueWebsocket
    * @description Connects to the OBS websocket with ip and port from config 
    * and creates an event callback for every message
    */
@@ -180,18 +180,18 @@ class App {
 
     this.wsClient.on("close", () => {
       if(this.wsClient?.readyState === WebSocket.CLOSED) {
-        this.initRocketLeagueWebsocket();
         warn.wb("Rocket League WebSocket Server Closed. Attempting to reconnect");
+        this.initRocketLeagueWebsocket();
       }
     })
 
     this.wsClient.on("error", () => {
-      this.initRocketLeagueWebsocket();
-
       error.wb(`Error connecting to Rocket League on host "` +
       `${this.rocketLeagueHostname}"\nIs the plugin loaded into ` +
       `Rocket League? Run the command "plugin load sos" from the ` +
       `BakkesMod console to make sure`);
+
+      this.initRocketLeagueWebsocket();
     });
   }
 
