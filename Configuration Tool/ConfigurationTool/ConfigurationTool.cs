@@ -267,7 +267,7 @@ namespace ConfigurationTool
         // Whenever one of the delay's textboxes are changed, it updates the configuration
         private void delay_TextChanged(object sender, EventArgs e)
 		{
-            Control control = (Control)sender;
+            TextBox control = (TextBox)sender;
             string eventName = control.Name.Replace("_textBox", "");
 
             if (control.Text != "")
@@ -278,6 +278,19 @@ namespace ConfigurationTool
                 string output = Newtonsoft.Json.JsonConvert.SerializeObject(configOptions, Newtonsoft.Json.Formatting.Indented);
                 File.WriteAllText("configuration.json", output);
             }
+        }
+
+        // Whenever one of the delay's textboxes are changed, it updates the configuration
+        private void enable_CheckedChanged(object sender, EventArgs e)
+        {
+            CheckBox control = (CheckBox)sender;
+            string eventName = control.Name.Replace("_checkBox", "");
+
+            bool enable = control.Checked;
+            configOptions["enable"][eventName] = enable;
+
+            string output = Newtonsoft.Json.JsonConvert.SerializeObject(configOptions, Newtonsoft.Json.Formatting.Indented);
+            File.WriteAllText("configuration.json", output);
         }
 
         // Whenever one of the obs' textboxes are changed, it updates the configuration
@@ -328,5 +341,5 @@ namespace ConfigurationTool
             string output = Newtonsoft.Json.JsonConvert.SerializeObject(configOptions, Newtonsoft.Json.Formatting.Indented);
             File.WriteAllText("configuration.json", output);
         }
-    }
+	}
 }

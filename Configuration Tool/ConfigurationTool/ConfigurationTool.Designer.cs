@@ -310,6 +310,7 @@
 			this.initialized_checkBox.Size = new System.Drawing.Size(15, 14);
 			this.initialized_checkBox.TabIndex = 16;
 			this.initialized_checkBox.UseVisualStyleBackColor = true;
+			this.initialized_checkBox.CheckedChanged += new System.EventHandler(this.enable_CheckedChanged);
 			// 
 			// goal_scored_checkBox
 			// 
@@ -320,6 +321,7 @@
 			this.goal_scored_checkBox.Size = new System.Drawing.Size(15, 14);
 			this.goal_scored_checkBox.TabIndex = 17;
 			this.goal_scored_checkBox.UseVisualStyleBackColor = true;
+			this.goal_scored_checkBox.CheckedChanged += new System.EventHandler(this.enable_CheckedChanged);
 			// 
 			// replay_will_end_checkBox
 			// 
@@ -330,6 +332,7 @@
 			this.replay_will_end_checkBox.Size = new System.Drawing.Size(15, 14);
 			this.replay_will_end_checkBox.TabIndex = 18;
 			this.replay_will_end_checkBox.UseVisualStyleBackColor = true;
+			this.replay_will_end_checkBox.CheckedChanged += new System.EventHandler(this.enable_CheckedChanged);
 			// 
 			// initialized_textBox
 			// 
@@ -379,6 +382,7 @@
 			this.match_destroyed_checkBox.Size = new System.Drawing.Size(15, 14);
 			this.match_destroyed_checkBox.TabIndex = 21;
 			this.match_destroyed_checkBox.UseVisualStyleBackColor = true;
+			this.match_destroyed_checkBox.CheckedChanged += new System.EventHandler(this.enable_CheckedChanged);
 			// 
 			// podium_start_label
 			// 
@@ -419,6 +423,7 @@
 			this.podium_start_checkBox.Size = new System.Drawing.Size(15, 14);
 			this.podium_start_checkBox.TabIndex = 20;
 			this.podium_start_checkBox.UseVisualStyleBackColor = true;
+			this.podium_start_checkBox.CheckedChanged += new System.EventHandler(this.enable_CheckedChanged);
 			// 
 			// match_ended_label
 			// 
@@ -448,6 +453,7 @@
 			this.match_ended_checkBox.Size = new System.Drawing.Size(15, 14);
 			this.match_ended_checkBox.TabIndex = 19;
 			this.match_ended_checkBox.UseVisualStyleBackColor = true;
+			this.match_ended_checkBox.CheckedChanged += new System.EventHandler(this.enable_CheckedChanged);
 			// 
 			// replay_will_end_label
 			// 
@@ -498,6 +504,7 @@
 			this.replay_end_checkBox.Size = new System.Drawing.Size(15, 14);
 			this.replay_end_checkBox.TabIndex = 31;
 			this.replay_end_checkBox.UseVisualStyleBackColor = true;
+			this.replay_end_checkBox.CheckedChanged += new System.EventHandler(this.enable_CheckedChanged);
 			// 
 			// goal_scored_scene_textBox
 			// 
