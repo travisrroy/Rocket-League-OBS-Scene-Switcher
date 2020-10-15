@@ -9,30 +9,40 @@ import _ = require("lodash");
 const fs = fsNode.promises;
 const configPath = path.resolve(".", "./configuration.json");
 
-// https://regex101.com/r/X9YMp2/1
+
+
+/**
+ * @function parseVariableName
+ * @description Parses the variable name from the user's input and replaces it with what is contained in that variable
+ * https://regex101.com/r/X9YMp2/1
+ */
 const parseVariableName = (configVal: string, replaceVal: string, replaceKey: string = "teamName"): string => {
   const re = new RegExp(`\{${replaceKey}\}`)
   return configVal.replace(re, replaceVal);
 }
 
+
+
 class App {
-  private config: Config;
+  private config: Config;                 // Config from configuration.json
   
-  private OBSHostname: string;
-  private OBSAuth: string;
-  private sceneList: string[];
-  private obsClient: OBSWebSocket | null;
+  private OBSHostname: string;            // Hostname for the OBS websocket
+  private OBSAuth: string;                // Password for the OBS websocket
+  private sceneList: string[];            // List of scenes from OBS
+  private obsClient: OBSWebSocket | null; // The OBS websocket client
 
-  private gameState: GameState;
-  private replayWillEnd: boolean;
-  private rocketLeagueHostname: string;
-  private wsClient: WebSocket | null;
+  private rocketLeagueHostname: string;   // Hostname for the Rocket League websocket
+  private gameState: GameState;           // The gameState from Rocket League
+  private replayWillEnd: boolean;         // Tracks if the replay was skipped before replay_will_end event was fired
+  private wsClient: WebSocket | null;     // The websocket client for the SOS plugin for Rocket League
 
-  private lastUpdate: number;
+  private lastUpdate: number;             // Milliseconds since the last update from the config file has occured
+
+
 
   constructor() {
     try {
-      // Read from JSON
+      // Read from JSON configuration file
       this.config = JSON.parse(fsNode.readFileSync(configPath, "utf-8"));
     }
     catch (e) {
@@ -55,12 +65,25 @@ class App {
     this.lastUpdate = new Date().getTime();
   }
 
+
+
+  /**
+   * @method init
+   * @description Initializes and connects to the OBS websocket and Rocket League websocket
+   */
   init = () => {
     warn.wb("Please ensure that you have set the configuration with the configuration tool!");
     this.initOBSWebSocket();
     this.initRocketLeagueWebsocket();
   }
 
+
+
+  /**
+   * @method initOBSWebSocket
+   * @description Connects to the OBS websocket with credentials from config 
+   * and retrieves the list of OBS scenes
+   */
   initOBSWebSocket = () => {
     this.obsClient = new OBSWebSocket();
 
@@ -73,7 +96,7 @@ class App {
 
       return this.obsClient?.send("GetSceneList");
     })
-    .then((data: any) => {
+    .then((data: any) => { // Promise from send GetSceneList
       data.scenes.map((scene: any) => {
         this.sceneList.push(scene.name)
       });
@@ -90,6 +113,13 @@ class App {
     });
   }
 
+
+
+  /**
+   * @method initOBSWebSocket
+   * @description Connects to the OBS websocket with ip and port from config 
+   * and creates an event callback for every message
+   */
   initRocketLeagueWebsocket = () => {
     this.wsClient = new WebSocket("ws://" + this.rocketLeagueHostname);
 
@@ -97,12 +127,12 @@ class App {
         success.wb("Connected to Rocket League on " + this.rocketLeagueHostname);
     }
 
-    // Callback to process every message sent on the websocket
+    // Callback to process every message event sent from the websocket server
     this.wsClient.on("message", (d: string) => {
       try {
         const { event, data } = JSON.parse(d);
 
-        /* List of SOS Events:
+        /* List of Rocket League SOS Events:
         *  match_created, initialized, pre_countdown_begin, post_countdown_begin
         *  update_state, statfeed_event, goal_scored, replay_start, replay_will_end
         *  replay_end, match_ended, podium_start, match_destroyed
@@ -144,7 +174,7 @@ class App {
         }
       }
       catch(e) {
-        error.wb(e);
+        error.wb("Error processing event message: " + e);
       }
     });
 
@@ -165,21 +195,41 @@ class App {
     });
   }
 
+
+
+  /**
+   * @method update_state
+   * @description Updates the internal gamestate with the state tick from the server and
+   * determines when the next config update should occur
+   */
   update_state = (data: GameState) => {
     this.gameState = data;
 
-    
+    // Checking if time passed is greater than 2500ms since last update
     if (new Date().getTime() - this.lastUpdate >= 2500) {
       this.read_config();
     }
   }
 
+
+
+  /**
+   * @method read_config
+   * @description Updates the internal gamestate with the state tick from the server and
+   * determines when the next config update should occur
+   */
   read_config = async() => {
     const rawData: string = await fs.readFile(configPath, "utf-8");
     this.config = JSON.parse(rawData);
   }
 
-  // Processing a goal that is scored and changing scene to the team that scored
+
+
+  /**
+   * @method goal_scored
+   * @description Processing a goal that is scored and changing scene 
+   * to a team specific scene of the team that scored
+   */
   goal_scored = (data: GoalScored) => {
     const { teamnum } = data.scorer; //0 = left, 1 = right
     const teamObject = this.gameState.game?.teams[teamnum];
@@ -189,8 +239,13 @@ class App {
     this.updateScene(scene, this.config.delays.goal_scored);
   }
 
-  // When the goal is scored in the replay, the replay_will_end event is fired
-  // This allows us to have a nice transition beack to the match after the replay ends
+
+
+  /**
+   * @method replay_will_end
+   * @description When the goal is scored in the replay, the replay_will_end event is fired.
+   * This allows us to have a nice transition back to the proper scene after the replay ends
+   */
   replay_will_end = () => {
     this.replayWillEnd = true;
 
@@ -200,15 +255,26 @@ class App {
     }
   }
 
+
+
+  /**
+   * @method replay_end
+   * @description Handles the event if the replay is skipped by everyone before 
+   * the replay_will_end event is fired
+   */
   replay_end = () => {
-    // If the replay is skipped by everyone, this returns the scene back to the match
     if (!this.replayWillEnd) {
       this.updateScene(this.config.scenes.replay_end, this.config.delays.replay_end);
     }
     this.replayWillEnd = false;
   }
 
-  // Gets the winning team and changes the scene to the proper winning scene
+
+
+  /**
+   * @method match_ended
+   * @description Gets the winning team and changes the scene to the proper winning scene
+   */
   match_ended = (data: MatchEnded) => {
     const teamObject = this.gameState.game?.teams[data.winner_team_num];
     const teamName = _.capitalize(teamObject?.name);
@@ -217,6 +283,13 @@ class App {
     this.updateScene(scene, this.config.delays.match_ended);
   }
 
+
+
+  /**
+   * @method updateScene
+   * @description Checks if the scene exists in OBS and sets a timeout of sceneDelay length
+   * and changes the scene once the timeout is over
+   */
   updateScene = (sceneName: string, sceneDelay: number) => {
     if(this.sceneList.includes(sceneName)){
       setTimeout(() => { 
@@ -230,6 +303,8 @@ class App {
     }
   }
 }
+
+
 
 // Main entry of the application
 const app = new App();
