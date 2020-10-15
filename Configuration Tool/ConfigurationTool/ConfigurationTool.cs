@@ -280,7 +280,7 @@ namespace ConfigurationTool
             }
         }
 
-        // Whenever one of the delay's textboxes are changed, it updates the configuration
+        // Whenever one of the enable's checkboxes are changed, it updates the configuration
         private void enable_CheckedChanged(object sender, EventArgs e)
         {
             CheckBox control = (CheckBox)sender;
