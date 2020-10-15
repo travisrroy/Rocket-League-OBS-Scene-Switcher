@@ -91,3 +91,46 @@ export interface GoalScored {
 export interface MatchEnded {
   winner_team_num: number;
 }
+
+export interface Connections {
+  OBSHostname: string;
+  OBSAuth: string;
+  RocketLeagueHostname: string;
+}
+
+export interface Scenes {
+  initialized: string;
+  goal_scored: string;
+  replay_will_end: string;
+  replay_end: string;
+  match_ended: string;
+  podium_start: string;
+  match_destroyed: string;
+}
+
+export interface Delays {
+  initialized: number;
+  goal_scored: number;
+  replay_will_end: number;
+  replay_end: number;
+  match_ended: number;
+  podium_start: number;
+  match_destroyed: number;
+}
+
+export interface Enable {
+  initialized: boolean;
+  goal_scored: boolean;
+  replay_will_end: boolean;
+  replay_end: boolean;
+  match_ended: boolean;
+  podium_start: boolean;
+  match_destroyed: boolean;
+}
+
+export interface Config {
+  connections: Connections;
+  scenes: Scenes;
+  delays: Delays;
+  enable: Enable;
+}

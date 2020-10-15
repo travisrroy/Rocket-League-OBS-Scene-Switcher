@@ -1,11 +1,25 @@
-import { GameState, GoalScored, MatchEnded } from "./types"
+import { Config, GameState, GoalScored, MatchEnded } from "./types"
 import WebSocket = require("ws");
 import OBSWebSocket = require("obs-websocket-js");
+import * as fsNode from "fs";
+import path from "path"
 const { success, error, warn } = require ("cli-msg");
 import _ = require("lodash");
 
+const fs = fsNode.promises;
+const configPath = path.resolve(".", "./configuration.json");
+
+// https://regex101.com/r/X9YMp2/1
+const parseVariableName = (configVal: string, replaceVal: string, replaceKey: string = "teamName"): string => {
+  const re = new RegExp(`\{${replaceKey}\}`)
+  return configVal.replace(re, replaceVal);
+}
+
 class App {
+  private config: Config;
+  
   private OBSHostname: string;
+  private OBSAuth: string;
   private sceneList: string[];
   private obsClient: OBSWebSocket | null;
 
@@ -14,20 +28,35 @@ class App {
   private rocketLeagueHostname: string;
   private wsClient: WebSocket | null;
 
+  private lastUpdate: number;
+
   constructor() {
+    try {
+      // Read from JSON
+      this.config = JSON.parse(fsNode.readFileSync(configPath, "utf-8"));
+    }
+    catch (e) {
+      error.wb(e);
+      process.exit(1);
+    }
+
     // OBS Websocket
-    this.OBSHostname = "localhost:4444";
+    this.OBSHostname = this.config.connections.OBSHostname;
+    this.OBSAuth = this.config.connections.OBSAuth;
     this.sceneList = [];
     this.obsClient = null;
 
     // Rocket League SOS Websocket
+    this.rocketLeagueHostname = this.config.connections.RocketLeagueHostname;
+    this.wsClient = null;
     this.gameState = {};
     this.replayWillEnd = false;
-    this.rocketLeagueHostname = "localhost:49122";
-    this.wsClient = null;
+
+    this.lastUpdate = new Date().getTime();
   }
 
   init = () => {
+    warn.wb("Please ensure that you have set the configuration with the configuration tool!");
     this.initOBSWebSocket();
     this.initRocketLeagueWebsocket();
   }
@@ -37,6 +66,7 @@ class App {
 
     this.obsClient.connect({
       address: this.OBSHostname,
+      password: this.OBSAuth
     })
     .then(() => {
       success.wb("Connected to OBS on " + this.OBSHostname);
@@ -79,28 +109,35 @@ class App {
         */
           switch(event) {
           case "game:initialized":
-            this.updateScene("Match", 0);
+            if (this.config.enable.initialized) 
+              this.updateScene(this.config.scenes.initialized, this.config.delays.initialized);
             break;
           case "game:update_state":
-            this.gameState = data;
+            this.update_state(data);
             break;
           case "game:goal_scored":
-            this.goal_scored(data);
+            if (this.config.enable.goal_scored) 
+              this.goal_scored(data);
             break;
           case "game:replay_will_end":
-            this.replay_will_end();
+            if (this.config.enable.replay_will_end) 
+              this.replay_will_end();
             break;
           case "game:replay_end":
-            this.replay_end();
+            if (this.config.enable.replay_end) 
+              this.replay_end();
             break;
           case "game:match_ended":
-            this.match_ended(data);
+            if (this.config.enable.match_ended) 
+              this.match_ended(data);
             break;
           case "game:podium_start":
-            this.updateScene("End Match", 4250);
+            if (this.config.enable.podium_start) 
+              this.updateScene(this.config.scenes.podium_start, this.config.delays.podium_start);
             break;
           case "game:match_destroyed":
-            this.updateScene("Intermission", 0);
+            if (this.config.enable.match_destroyed) 
+              this.updateScene(this.config.scenes.match_destroyed, this.config.delays.match_destroyed);
             break;
           default:
             // Events not needed
@@ -111,19 +148,35 @@ class App {
       }
     });
 
-    this.wsClient.on("error", (err: Error) => {
-      console.log(err);
-      if(err?.name === "ECONNREFUSED"){
+    this.wsClient.on("close", () => {
+      if(this.wsClient?.readyState === WebSocket.CLOSED) {
         this.initRocketLeagueWebsocket();
         warn.wb("Rocket League WebSocket Server Closed. Attempting to reconnect");
       }
-      else {
-        error.wb(`Error connecting to Rocket League on host "` +
-        `${this.rocketLeagueHostname}"\nIs the plugin loaded into ` +
-        `Rocket League? Run the command "plugin load sos" from the ` +
-        `BakkesMod console to make sure`);
-      }
+    })
+
+    this.wsClient.on("error", () => {
+      this.initRocketLeagueWebsocket();
+
+      error.wb(`Error connecting to Rocket League on host "` +
+      `${this.rocketLeagueHostname}"\nIs the plugin loaded into ` +
+      `Rocket League? Run the command "plugin load sos" from the ` +
+      `BakkesMod console to make sure`);
     });
+  }
+
+  update_state = (data: GameState) => {
+    this.gameState = data;
+
+    
+    if (new Date().getTime() - this.lastUpdate >= 2500) {
+      this.read_config();
+    }
+  }
+
+  read_config = async() => {
+    const rawData: string = await fs.readFile(configPath, "utf-8");
+    this.config = JSON.parse(rawData);
   }
 
   // Processing a goal that is scored and changing scene to the team that scored
@@ -132,7 +185,8 @@ class App {
     const teamObject = this.gameState.game?.teams[teamnum];
     const teamName = _.capitalize(teamObject?.name);
 
-    this.updateScene(teamName, 1600);
+    const scene: string = parseVariableName(this.config.scenes.goal_scored, teamName)
+    this.updateScene(scene, this.config.delays.goal_scored);
   }
 
   // When the goal is scored in the replay, the replay_will_end event is fired
@@ -142,14 +196,14 @@ class App {
 
     // Zero second goal is scored or game is in Overtime, we don"t want this scene
     if (this.gameState.game?.time !== 0 && !this.gameState.game?.isOT) {
-      this.updateScene("Match", 1250);
+      this.updateScene(this.config.scenes.replay_will_end, this.config.delays.replay_will_end);
     }
   }
 
   replay_end = () => {
     // If the replay is skipped by everyone, this returns the scene back to the match
     if (!this.replayWillEnd) {
-      this.updateScene("Match", 0);
+      this.updateScene(this.config.scenes.replay_end, this.config.delays.replay_end);
     }
     this.replayWillEnd = false;
   }
@@ -157,9 +211,10 @@ class App {
   // Gets the winning team and changes the scene to the proper winning scene
   match_ended = (data: MatchEnded) => {
     const teamObject = this.gameState.game?.teams[data.winner_team_num];
-    const winTeamScene = _.capitalize(teamObject?.name) + " Win";
+    const teamName = _.capitalize(teamObject?.name);
     
-    this.updateScene(winTeamScene, 0);
+    const scene: string = parseVariableName(this.config.scenes.match_ended, teamName)
+    this.updateScene(scene, this.config.delays.match_ended);
   }
 
   updateScene = (sceneName: string, sceneDelay: number) => {
