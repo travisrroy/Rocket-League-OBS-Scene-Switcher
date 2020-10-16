@@ -7,7 +7,7 @@
     <ProjectGuid>{20723E38-AF28-4FB5-B6EE-630FD3EEF40B}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>ConfigurationTool</RootNamespace>
-    <AssemblyName>ConfigurationTool</AssemblyName>
+    <AssemblyName>ConfigurationTool-OBS</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -27,7 +27,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\Releases\OBS\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>

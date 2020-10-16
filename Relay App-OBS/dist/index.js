@@ -200,9 +200,10 @@ var App = /** @class */ (function () {
          */
         this.update_state = function (data) {
             _this.gameState = data;
-            // Checking if time passed is greater than 2500ms since last update
+            // Updating from the config every 2500ms
             if (new Date().getTime() - _this.lastUpdate >= 2500) {
                 _this.read_config();
+                _this.lastUpdate = new Date().getTime();
             }
         };
         /**

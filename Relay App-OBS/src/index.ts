@@ -205,9 +205,10 @@ class App {
   update_state = (data: GameState) => {
     this.gameState = data;
 
-    // Checking if time passed is greater than 2500ms since last update
+    // Updating from the config every 2500ms
     if (new Date().getTime() - this.lastUpdate >= 2500) {
       this.read_config();
+      this.lastUpdate = new Date().getTime();
     }
   }
 
