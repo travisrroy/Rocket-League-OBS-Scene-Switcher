@@ -118,6 +118,7 @@ var App = /** @class */ (function () {
             _this.obsClient = new SlobsJS();
             if (_this.OBSAuth === "") {
                 warn.wb("Please ensure you have set your SLOBS API token with the Configuration Tool!");
+                _this.read_config();
                 setTimeout(function () {
                     _this.initOBSWebSocket();
                 }, 5000);

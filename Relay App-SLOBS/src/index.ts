@@ -89,6 +89,7 @@ class App {
 
     if (this.OBSAuth === "") {
       warn.wb("Please ensure you have set your SLOBS API token with the Configuration Tool!")
+      this.read_config();
 
       setTimeout(() => {
         this.initOBSWebSocket();
