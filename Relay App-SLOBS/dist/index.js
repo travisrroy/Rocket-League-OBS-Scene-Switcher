@@ -54,12 +54,32 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spread = (this && this.__spread) || function () {
+    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+    return ar;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var WebSocket = require("ws");
-var OBSWebSocket = require("obs-websocket-js");
+var SlobsJS = require("slobs.js");
 var fsNode = __importStar(require("fs"));
 var path_1 = __importDefault(require("path"));
 var _a = require("cli-msg"), success = _a.success, error = _a.error, warn = _a.warn;
@@ -94,30 +114,31 @@ var App = /** @class */ (function () {
          * and retrieves the list of OBS scenes
          */
         this.initOBSWebSocket = function () {
-            _this.obsClient = new OBSWebSocket();
-            _this.obsClient.connect({
-                address: _this.OBSHostname,
-                password: _this.OBSAuth
-            })
-                .then(function () {
-                var _a;
-                success.wb("Connected to OBS on " + _this.OBSHostname);
-                return (_a = _this.obsClient) === null || _a === void 0 ? void 0 : _a.send("GetSceneList");
-            })
-                .then(function (data) {
-                data.scenes.map(function (scene) {
-                    _this.sceneList.push(scene.name);
-                });
-            })
-                .catch(function (err) {
-                if (err.code !== "CONNECTION_ERROR") {
-                    error.wb("Fatal error occurred: " + err.description);
+            var _a, _b, _c;
+            _this.obsClient = new SlobsJS();
+            if (_this.OBSAuth === "") {
+                warn.wb("Please ensure you have set your SLOBS API token with the Configuration Tool!");
+                setTimeout(function () {
+                    _this.initOBSWebSocket();
+                }, 5000);
+            }
+            else {
+                (_a = _this.obsClient) === null || _a === void 0 ? void 0 : _a.login(_this.OBSHostname, _this.OBSAuth);
+                if ((_b = _this.obsClient) === null || _b === void 0 ? void 0 : _b.getConnected()) {
+                    success.wb("Connected to OBS on " + _this.OBSHostname);
+                    var sceneMap = (_c = _this.obsClient) === null || _c === void 0 ? void 0 : _c.getScenes();
+                    var scenes = __spread(sceneMap);
+                    scenes.map(function (scene) {
+                        _this.sceneList.push(scene[0]);
+                    });
                 }
-            });
-            _this.obsClient.on("ConnectionClosed", function () {
-                warn.wb("OBS WebSocket Server Closed. Attempting to reconnect");
-                _this.initOBSWebSocket();
-            });
+                else {
+                    warn.wb("Unable to connect to SLOBS! Retrying...");
+                    setTimeout(function () {
+                        _this.initOBSWebSocket();
+                    }, 2500);
+                }
+            }
         };
         /**
          * @method initRocketLeagueWebsocket
@@ -199,10 +220,15 @@ var App = /** @class */ (function () {
          * determines when the next config update should occur
          */
         this.update_state = function (data) {
+            var _a;
             _this.gameState = data;
-            // Checking if time passed is greater than 2500ms since last update
+            // Updating from the config every 2500ms
             if (new Date().getTime() - _this.lastUpdate >= 2500) {
                 _this.read_config();
+                if (!((_a = _this.obsClient) === null || _a === void 0 ? void 0 : _a.getConnected())) {
+                    _this.initOBSWebSocket();
+                }
+                _this.lastUpdate = new Date().getTime();
             }
         };
         /**
@@ -279,9 +305,7 @@ var App = /** @class */ (function () {
             if (_this.sceneList.includes(sceneName)) {
                 setTimeout(function () {
                     var _a;
-                    (_a = _this.obsClient) === null || _a === void 0 ? void 0 : _a.send("SetCurrentScene", {
-                        "scene-name": sceneName
-                    });
+                    (_a = _this.obsClient) === null || _a === void 0 ? void 0 : _a.setActiveScene(sceneName);
                 }, sceneDelay);
             }
             else {

@@ -1,0 +1,30 @@
+{
+  "name": "flg-obs-smart-switcher",
+  "version": "1.0.0",
+  "description": "Rocket League websocket that controls OBS",
+  "main": "./dist/index.js",
+  "scripts": {
+    "start": "node ./dist/index.js",
+    "build": "npm run clean && npx tsc",
+    "clean": "rimraf ./dist/* && rimraf ../Releases/OBS/RelayApp-SLOBS.exe",
+    "compile": "npm run build && pkg -t node12-win-x64 --output ../Releases/SLOBS/RelayApp-SLOBS.exe ./dist/index.js",
+    "dev": "npm run build && npm run start"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cli-msg": "^1.0.0",
+    "fs": "0.0.1-security",
+    "lodash": "^4.17.20",
+    "path": "^0.12.7",
+    "slobs.js": "^1.0.11",
+    "ws": "^7.2.1"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.162",
+    "@types/ws": "^7.2.7",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.0.3",
+    "pkg": "^4.4.9"
+  }
+}
