@@ -1,3 +1,5 @@
+import { GameStateEvent } from "./constants";
+
 export interface Team {
   name: string;
   score: number;
@@ -59,7 +61,7 @@ export interface Players {
 }
 
 export interface GameState {
-  event?: string;
+  event?: GameStateEvent;
   game?: Game
   hasGame?: boolean;
   players?: Players;
@@ -94,8 +96,10 @@ export interface MatchEnded {
 
 export interface Connections {
   OBSHostname: string;
+  OBSPort: number;
   OBSAuth: string;
-  RocketLeagueHostname: string;
+  RLHostname: string;
+  RLPort: number;
 }
 
 export interface Scenes {
@@ -133,4 +137,41 @@ export interface Config {
   scenes: Scenes;
   delays: Delays;
   enable: Enable;
+}
+
+export interface Source {
+  cy: number;
+  cx: number;
+  alignment: number;
+  name: string;
+  id: number;
+  render: boolean;
+  muted: boolean;
+  locked: boolean;
+  source_cx: number;
+  source_cy: number;
+  type: string;
+  volume: number;
+  x: number;
+  y: number;
+  parentGroupName?: string;
+  groupChildren?: Source[];
+}
+
+export interface Scene {
+  sceneIndex: number;
+  sceneName: string;
+}
+
+export interface SceneList {
+  currentPreviewSceneName: string;
+  currentProgramSceneName: string;
+  scenes: Scene[];
+}
+
+export interface ConnError {
+  status: string;
+  description: string;
+  code: string;
+  error: string;
 }
