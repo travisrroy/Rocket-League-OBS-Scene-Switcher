@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using OBSWebsocketDotNet;
 using OBSWebsocketDotNet.Types;
+using System.Threading.Tasks;
 
 namespace ConfigurationTool
 {
@@ -151,7 +152,6 @@ namespace ConfigurationTool
         private void onConnect(object sender, EventArgs e)
         {
             BeginInvoke((MethodInvoker)(() => {
-                
                 obs_button.Text = "Disconnect";
                 EnableTable(this);
 
@@ -163,8 +163,8 @@ namespace ConfigurationTool
         // Populating the table's data from the configuration file
         private void populateTable(GetSceneListInfo sceneListInfo)
 		{
-            List<OBSScene> scenes = sceneListInfo.Scenes;
-            foreach (OBSScene scene in scenes)
+            List<SceneBasicInfo> scenes = sceneListInfo.Scenes;
+            foreach (SceneBasicInfo scene in scenes)
             {
                 initialized_comboBox.Items.Add(scene.Name);
                 replay_will_end_comboBox.Items.Add(scene.Name);
@@ -208,10 +208,44 @@ namespace ConfigurationTool
             match_destroyed_checkBox.Checked = Convert.ToBoolean(configOptions["enable"]["match_destroyed"]);
         }
 
-        private void onDisconnect(object sender, EventArgs e)
+        private void cleanTable()
         {
+			// Clean scene textboxes
+			goal_scored_scene_textBox.Text = string.Empty;
+			match_ended_scene_textBox.Text = string.Empty;
+
+			// Clean comboboxes
+			initialized_comboBox.Items.Clear();
+			replay_will_end_comboBox.Items.Clear();
+			replay_end_comboBox.Items.Clear();
+			podium_start_comboBox.Items.Clear();
+			match_destroyed_comboBox.Items.Clear();
+
+            // Clean delay textboxes
+            initialized_textBox.Text = string.Empty;
+            goal_scored_textBox.Text = string.Empty;
+            replay_will_end_textBox.Text = string.Empty;
+            replay_end_textBox.Text = string.Empty;
+            match_ended_textBox.Text = string.Empty;
+            podium_start_textBox.Text = string.Empty;
+            match_destroyed_textBox.Text = string.Empty;
+
+            // Clean checkboxes
+            initialized_checkBox.Checked = false;
+            goal_scored_checkBox.Checked = false;
+            replay_will_end_checkBox.Checked = false;
+            replay_end_checkBox.Checked = false;
+            match_ended_checkBox.Checked = false;
+            podium_start_checkBox.Checked = false;
+            match_destroyed_checkBox.Checked = false;
+		}
+
+        private void onDisconnect(object sender, OBSWebsocketDotNet.Communication.ObsDisconnectionInfo e)
+		{
             BeginInvoke((MethodInvoker)(() => {
-                DisableTable(this);
+                cleanTable();
+
+				DisableTable(this);
                 obs_button.Text = "Connect to OBS";
             }));
         }
@@ -223,7 +257,8 @@ namespace ConfigurationTool
                 try
                 {
                     string obs_hostname = "ws://" + obs_ip.Text + ":" + obs_port.Text;
-                    _obs.Connect(obs_hostname, obs_password.Text);
+                    var task = Task.Run(() => _obs.ConnectAsync(obs_hostname, obs_password.Text));
+
                 }
                 catch (AuthFailureException)
                 {
@@ -243,54 +278,66 @@ namespace ConfigurationTool
         }
 
         // Whenever one of the scene's comboboxes or textboxes are changed, it updates the configuration
-		private void scene_InputChanged(object sender, EventArgs e)
+		private void scene_TextChanged(object sender, EventArgs e)
 		{
-            Control control = (Control)sender;
-            string eventName;
+            // Prevents clearing the textbox from modifying the file
+            if (_obs.IsConnected)
+            {
+                Control control = (Control)sender;
+                string eventName;
 
-            // Removing the end of the string to get the event
-            if (control.Name.Contains("comboBox"))
-			{
-                eventName = control.Name.Replace("_comboBox", "");
-            }
-            else
-			{
-                eventName = control.Name.Replace("_scene_textBox", "");
-            }
+                // Removing the end of the string to get the event
+                if (control.Name.Contains("comboBox"))
+                {
+                    eventName = control.Name.Replace("_comboBox", "");
+                }
+                else
+                {
+                    eventName = control.Name.Replace("_scene_textBox", "");
+                }
 
-            configOptions["scenes"][eventName] = control.Text;
-
-            string output = Newtonsoft.Json.JsonConvert.SerializeObject(configOptions, Newtonsoft.Json.Formatting.Indented);
-            File.WriteAllText("configuration.json", output);
-        }
-
-        // Whenever one of the delay's textboxes are changed, it updates the configuration
-        private void delay_TextChanged(object sender, EventArgs e)
-		{
-            TextBox control = (TextBox)sender;
-            string eventName = control.Name.Replace("_textBox", "");
-
-            if (control.Text != "")
-			{
-                int delay = Convert.ToInt32(control.Text);
-                configOptions["delays"][eventName] = delay;
+                configOptions["scenes"][eventName] = control.Text;
 
                 string output = Newtonsoft.Json.JsonConvert.SerializeObject(configOptions, Newtonsoft.Json.Formatting.Indented);
                 File.WriteAllText("configuration.json", output);
             }
         }
 
+        // Whenever one of the delay's textboxes are changed, it updates the configuration
+        private void delay_TextChanged(object sender, EventArgs e)
+		{
+			// Prevents clearing the textbox from modifying the file
+			if (_obs.IsConnected)
+            {
+                TextBox control = (TextBox)sender;
+                string eventName = control.Name.Replace("_textBox", "");
+
+                if (control.Text != "")
+                {
+                    int delay = Convert.ToInt32(control.Text);
+                    configOptions["delays"][eventName] = delay;
+
+                    string output = Newtonsoft.Json.JsonConvert.SerializeObject(configOptions, Newtonsoft.Json.Formatting.Indented);
+                    File.WriteAllText("configuration.json", output);
+                }
+            }
+        }
+
         // Whenever one of the enable's checkboxes are changed, it updates the configuration
         private void enable_CheckedChanged(object sender, EventArgs e)
         {
-            CheckBox control = (CheckBox)sender;
-            string eventName = control.Name.Replace("_checkBox", "");
+			// Prevents clearing the textbox from modifying the file
+			if (_obs.IsConnected)
+            {
+                CheckBox control = (CheckBox)sender;
+                string eventName = control.Name.Replace("_checkBox", "");
 
-            bool enable = control.Checked;
-            configOptions["enable"][eventName] = enable;
+                bool enable = control.Checked;
+                configOptions["enable"][eventName] = enable;
 
-            string output = Newtonsoft.Json.JsonConvert.SerializeObject(configOptions, Newtonsoft.Json.Formatting.Indented);
-            File.WriteAllText("configuration.json", output);
+                string output = Newtonsoft.Json.JsonConvert.SerializeObject(configOptions, Newtonsoft.Json.Formatting.Indented);
+                File.WriteAllText("configuration.json", output);
+            }
         }
 
         // Whenever one of the obs' textboxes are changed, it updates the configuration

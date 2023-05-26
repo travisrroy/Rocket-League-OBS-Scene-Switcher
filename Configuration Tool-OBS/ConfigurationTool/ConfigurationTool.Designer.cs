@@ -288,7 +288,7 @@
 			this.initialized_comboBox.Name = "initialized_comboBox";
 			this.initialized_comboBox.Size = new System.Drawing.Size(121, 21);
 			this.initialized_comboBox.TabIndex = 10;
-			this.initialized_comboBox.SelectedIndexChanged += new System.EventHandler(this.scene_InputChanged);
+			this.initialized_comboBox.SelectedIndexChanged += new System.EventHandler(this.scene_TextChanged);
 			// 
 			// replay_will_end_comboBox
 			// 
@@ -299,7 +299,7 @@
 			this.replay_will_end_comboBox.Name = "replay_will_end_comboBox";
 			this.replay_will_end_comboBox.Size = new System.Drawing.Size(121, 21);
 			this.replay_will_end_comboBox.TabIndex = 12;
-			this.replay_will_end_comboBox.SelectedIndexChanged += new System.EventHandler(this.scene_InputChanged);
+			this.replay_will_end_comboBox.SelectedIndexChanged += new System.EventHandler(this.scene_TextChanged);
 			// 
 			// initialized_checkBox
 			// 
@@ -362,7 +362,7 @@
 			this.match_destroyed_comboBox.Name = "match_destroyed_comboBox";
 			this.match_destroyed_comboBox.Size = new System.Drawing.Size(121, 21);
 			this.match_destroyed_comboBox.TabIndex = 15;
-			this.match_destroyed_comboBox.SelectedIndexChanged += new System.EventHandler(this.scene_InputChanged);
+			this.match_destroyed_comboBox.SelectedIndexChanged += new System.EventHandler(this.scene_TextChanged);
 			// 
 			// match_destroyed_textBox
 			// 
@@ -403,7 +403,7 @@
 			this.podium_start_comboBox.Name = "podium_start_comboBox";
 			this.podium_start_comboBox.Size = new System.Drawing.Size(121, 21);
 			this.podium_start_comboBox.TabIndex = 14;
-			this.podium_start_comboBox.SelectedIndexChanged += new System.EventHandler(this.scene_InputChanged);
+			this.podium_start_comboBox.SelectedIndexChanged += new System.EventHandler(this.scene_TextChanged);
 			// 
 			// podium_start_textBox
 			// 
@@ -484,7 +484,7 @@
 			this.replay_end_comboBox.Name = "replay_end_comboBox";
 			this.replay_end_comboBox.Size = new System.Drawing.Size(121, 21);
 			this.replay_end_comboBox.TabIndex = 29;
-			this.replay_end_comboBox.SelectedIndexChanged += new System.EventHandler(this.scene_InputChanged);
+			this.replay_end_comboBox.SelectedIndexChanged += new System.EventHandler(this.scene_TextChanged);
 			// 
 			// replay_end_textBox
 			// 
@@ -513,7 +513,7 @@
 			this.goal_scored_scene_textBox.Name = "goal_scored_scene_textBox";
 			this.goal_scored_scene_textBox.Size = new System.Drawing.Size(121, 20);
 			this.goal_scored_scene_textBox.TabIndex = 32;
-			this.goal_scored_scene_textBox.TextChanged += new System.EventHandler(this.scene_InputChanged);
+			this.goal_scored_scene_textBox.TextChanged += new System.EventHandler(this.scene_TextChanged);
 			// 
 			// match_ended_scene_textBox
 			// 
@@ -522,7 +522,7 @@
 			this.match_ended_scene_textBox.Name = "match_ended_scene_textBox";
 			this.match_ended_scene_textBox.Size = new System.Drawing.Size(121, 20);
 			this.match_ended_scene_textBox.TabIndex = 33;
-			this.match_ended_scene_textBox.TextChanged += new System.EventHandler(this.scene_InputChanged);
+			this.match_ended_scene_textBox.TextChanged += new System.EventHandler(this.scene_TextChanged);
 			// 
 			// obs_ip_label
 			// 
