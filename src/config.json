@@ -2,7 +2,7 @@
   "connections": {
     "OBSHostname": "localhost",
     "OBSPort": 4455,
-    "OBSAuth": "",
+    "OBSAuth": "LyrhBE7V9etoOolW",
     "RLHostname": "localhost",
     "RLPort": 49122
   },

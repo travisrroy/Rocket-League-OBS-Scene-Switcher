@@ -1,3 +1,11 @@
+/**
+ * File:          index.ts
+ * Author:        Travis Roy
+ * Date Created:  Oct 13, 2020
+ * Date Modified: May 5, 2023
+ * Description:   Main entrypoint and the business logic of application
+ */
+
 import * as fsNode from "fs";
 import path from "path";
 import _ = require("lodash");
@@ -12,6 +20,11 @@ import type { Config, GameState, GoalScored, MatchEnded } from "./types";
 const fs = fsNode.promises;
 const configPath = path.resolve(".", "./src/config.json");
 
+
+
+/**
+ * @class App
+ */
 class App {
   private config: Config;
   private obsConn: OBSConnection;
@@ -32,22 +45,32 @@ class App {
     }
 
     this.obsConn = new OBSConnection();
-    this.rlConn = new RocketLeagueConnection(this.updateCallback);
+    this.rlConn = new RocketLeagueConnection(this.update_callback);
     this.gameState = {};
     this.replayWillEnd = false;
     this.lastUpdate = new Date().getTime();
   }
 
+
+  
+  /**
+   * @method init
+   * @description Main entrypoint
+   */
   init = () => {
     this.obsConn.init();
     this.rlConn.init();
-
-    setTimeout(async() => {
-      console.log(await this.obsConn.getScenes());
-    }, 5000);
   }
 
-  updateCallback = (event: string, data: any) => {
+
+
+  /**
+   * @method update_callback
+   * @description Called each time a message from Rocket League is received
+   * @param event - The game state event from Rocket League
+   * @param data - The data attached to game state event
+   */
+  update_callback = (event: string, data: any) => {
     switch(event) {
       case GameStateEvent.Initialized:
         this.obsConn.setScene(this.config.scenes.initialized, this.config.delays.initialized);
@@ -80,9 +103,11 @@ class App {
           this.obsConn.setScene(this.config.scenes.match_destroyed, this.config.delays.match_destroyed);
         break;
       default:
-        //
+        break;
     }
   }
+
+
 
   /**
    * @method update_state
@@ -174,6 +199,5 @@ class App {
 
 const app = new App();
 app.init();
-// app.list();
 
 export default App;

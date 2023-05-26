@@ -1,3 +1,11 @@
+/**
+ * File:          OBSConnection.ts
+ * Author:        Travis Roy
+ * Date Created:  Dec 27, 2022
+ * Date Modified: May 5, 2023
+ * Description:   Contains the class for communication to OBS
+ */
+
 import * as fsNode from "fs";
 import path from "path";
 import OBSWebSocket, { OBSResponseTypes } from "obs-websocket-js";
@@ -8,16 +16,18 @@ import type { Config, Scene, ConnError, Scenes } from "../types";
 const fs = fsNode.promises;
 const configPath = path.resolve(".", "./src/config.json");
 
+
+/**
+ * @class OBSConnection
+ * @description The class that handles the connection to OBS
+ */
 export default class OBSConnection {
   private config: Config;
-
   private hostname: string;
   private port: number;
   private auth: string;
   private client: OBSWebSocket;
   private scenes: string[];
-
-
 
   constructor() {
     try {
@@ -38,14 +48,18 @@ export default class OBSConnection {
 
 
 
+  /**
+   * @method init
+   * @description Start and manage the connection to OBS' websocket server
+   */
   init = async() => {
     try {
       await this.client.connect(`ws://${this.hostname}:${this.port}`, this.auth);
       console.log("Connected to OBS");
 
+      // Populating the scene list
       const rawSceneList = await this.client.call("GetSceneList");
       this.parseScenes(rawSceneList);
-      console.log(this.scenes);
     }
     catch (error: any) {
       console.error('Failed to connect', error.code, error.message);
@@ -59,7 +73,14 @@ export default class OBSConnection {
   }
 
 
-  
+
+  /**
+   * @method parseScenes
+   * @description Parses the provided scenes and finds scenes with names that have duplicate parts. The non-duplicate 
+   * part of the name is replaced by {teamName} so that it can be used for dynamic scene switching
+   * @param rawSceneList The raw scenes from 
+   * @returns 
+   */
   private parseScenes = (rawSceneList: OBSResponseTypes['GetSceneList']) => {
     let maybeMatchArr: string[] = []; // Stores the string endings after the space
     let indexArr: number[] = []; // Holds the index of where there are matched endings
@@ -79,7 +100,6 @@ export default class OBSConnection {
     }
   
     // Finding the matches in the string array
-    //   NOTE: This does not store the first instance of a match
     const dupeArr = [...new Set(maybeMatchArr.filter((e, i, a) => a.indexOf(e) !== i))];
   
     // Looping back through the original array to find all the indexes of matched endings
@@ -111,7 +131,11 @@ export default class OBSConnection {
 
 
 
-  // Rewrite to only provide "Scene, Audio, Main, and {teamName} Replay"
+  /**
+   * @method getScenes
+   * @description Retrieves the raw list of scenes from OBS and passes them to be parsed
+   * @returns The list of parsed scenes
+   */
   getScenes = async() => {
     try {
       const rawSceneList = await this.client.call("GetSceneList");

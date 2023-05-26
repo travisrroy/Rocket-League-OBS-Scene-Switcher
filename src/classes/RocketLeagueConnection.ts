@@ -1,3 +1,11 @@
+/**
+ * File:          RocketLeagueConnection.ts
+ * Author:        Travis Roy
+ * Date Created:  Dec 27, 2022
+ * Date Modified: May 5, 2023
+ * Description:   Contains the class for communication to Rocket League
+ */
+
 import WebSocket from "ws";
 import * as fsNode from "fs";
 import path from "path";
@@ -11,9 +19,13 @@ import type { Config, GameState, GoalScored, MatchEnded } from "../types";
 const fs = fsNode.promises;
 const configPath = path.resolve(".", "./src/config.json");
 
+
+/**
+ * @class RocketLeagueConnection
+ * @description The class that handles the connection to Rocket League
+ */
 export default class RocketLeagueConnection {
   private config: Config;
-
   private hostname: string;
   private port: number;
   private client: WebSocket | null;
@@ -35,6 +47,12 @@ export default class RocketLeagueConnection {
     this.callback = eventCallback;
   }
 
+
+
+  /**
+   * @method init
+   * @description Start and manage the connection to Rocket League's websocket server
+   */
   init = () => {
     this.client = new WebSocket(`ws://${this.hostname}:${this.port}`);
 

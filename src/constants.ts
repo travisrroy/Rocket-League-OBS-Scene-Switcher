@@ -1,3 +1,7 @@
+ /**
+ * @enum GameStateEvent
+ * @description The game state events the websocket recieves from Rocket League
+ */
 export enum GameStateEvent {
   Initialized = "game:initialized",
   UpdateState = "game:update_state",
