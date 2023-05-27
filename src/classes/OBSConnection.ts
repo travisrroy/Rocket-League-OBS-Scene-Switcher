@@ -9,9 +9,8 @@
 import * as fsNode from "fs";
 import path from "path";
 import OBSWebSocket, { OBSResponseTypes } from "obs-websocket-js";
-
 import { sleep } from "../utils";
-import type { Config, Scene, ConnError, Scenes } from "../types";
+import type { Config, Scene } from "../types";
 
 const fs = fsNode.promises;
 const configPath = path.resolve(".", "./src/config.json");
