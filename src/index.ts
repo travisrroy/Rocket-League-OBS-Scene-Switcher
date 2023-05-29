@@ -70,7 +70,7 @@ class App {
    * @param event - The game state event from Rocket League
    * @param data - The data attached to game state event
    */
-  update_callback = (event: string, data: any) => {
+  update_callback = (event: GameStateEvent, data: any) => {
     switch(event) {
       case GameStateEvent.Initialized:
         this.obsConn.setScene(this.config.scenes.initialized, this.config.delays.initialized);

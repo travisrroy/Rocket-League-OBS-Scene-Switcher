@@ -29,9 +29,9 @@ export default class RocketLeagueConnection {
   private hostname: string;
   private port: number;
   private client: WebSocket | null;
-  private callback: (event: string, data: GameState) => void;
+  private callback: (event: GameStateEvent, data: GameState) => void;
   
-  constructor(eventCallback: (event: string, data: GameState) => void) {
+  constructor(eventCallback: (event: GameStateEvent, data: GameState) => void) {
     try {
       // Read from JSON configuration file
       this.config = JSON.parse(fsNode.readFileSync(configPath, "utf-8"));
