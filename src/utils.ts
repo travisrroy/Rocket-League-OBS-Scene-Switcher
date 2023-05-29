@@ -40,7 +40,7 @@ export function getKeyByValueGameState(value: string) {
  * @description Parses the variable name from the user's input and replaces it with what is contained in that variable
  * https://regex101.com/r/X9YMp2/2
  */
- export const parseVariableName = (configVal: string, replaceVal: string, replaceKey: string = "teamName"): string => {
+export const parseVariableName = (configVal: string, replaceVal: string, replaceKey: string = "teamName"): string => {
   const re = new RegExp(`\{${replaceKey}\}`)
   return configVal.replace(re, replaceVal);
 }
