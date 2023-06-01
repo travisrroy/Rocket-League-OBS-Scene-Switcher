@@ -12,9 +12,6 @@ import OBSWebSocket, { OBSResponseTypes } from "obs-websocket-js";
 import { sleep } from "../utils";
 import type { Config, Scene } from "../types";
 
-const fs = fsNode.promises;
-const configPath = path.resolve(".", "./src/config.json");
-
 
 /**
  * @class OBSConnection
@@ -28,7 +25,7 @@ export default class OBSConnection {
   private client: OBSWebSocket;
   private scenes: string[];
 
-  constructor() {
+  constructor(configPath: string) {
     try {
       // Read from JSON configuration file
       this.config = JSON.parse(fsNode.readFileSync(configPath, "utf-8"));

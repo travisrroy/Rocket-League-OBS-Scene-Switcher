@@ -16,10 +16,6 @@ import { GameStateEvent } from "../constants";
 import type { Config, GameState, GoalScored, MatchEnded } from "../types";
 
 
-const fs = fsNode.promises;
-const configPath = path.resolve(".", "./src/config.json");
-
-
 /**
  * @class RocketLeagueConnection
  * @description The class that handles the connection to Rocket League
@@ -31,7 +27,7 @@ export default class RocketLeagueConnection {
   private client: WebSocket | null;
   private callback: (event: GameStateEvent, data: GameState) => void;
   
-  constructor(eventCallback: (event: GameStateEvent, data: GameState) => void) {
+  constructor(configPath: string, eventCallback: (event: GameStateEvent, data: GameState) => void) {
     try {
       // Read from JSON configuration file
       this.config = JSON.parse(fsNode.readFileSync(configPath, "utf-8"));
