@@ -7,17 +7,19 @@ describe("sleep", () => {
 
   it("should not resolve until sleep has finished", async () => {
     const spy = jest.fn();
-    sleep(100).then(spy);  // <= resolve after 100ms
+    sleep(100).then(spy);  // resolve after 100ms
 
-    jest.advanceTimersByTime(20);  // <= advance less than 100ms
+    jest.advanceTimersByTime(20);  // advance less than 100ms
     await Promise.resolve();  // let any pending callbacks in PromiseJobs run
     expect(spy).not.toHaveBeenCalled();  // SUCCESS
 
-    jest.advanceTimersByTime(80);  // <= advance the rest of the time
+    jest.advanceTimersByTime(80);  // advance the rest of the time
     await Promise.resolve();  // let any pending callbacks in PromiseJobs run
     expect(spy).toHaveBeenCalled();  // SUCCESS
   });
 });
+
+
 
 describe("getKeyByValueGameState", () => {
   it.each([
@@ -41,6 +43,8 @@ describe("getKeyByValueGameState", () => {
     expect(result).toBeUndefined();
   });
 });
+
+
 
 describe("parseVariableName", () => {
   it("should replace {teamName} with the name of the team with default key", () => {
