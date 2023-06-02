@@ -16,6 +16,7 @@
     "@types/node": "^20.2.4",
     "@types/ws": "^8.5.4",
     "jest-html-reporter": "^3.10.0",
+    "jest-websocket-mock": "^2.4.0",
     "nodemon": "^2.0.22",
     "typescript": "^5.0.4"
   },

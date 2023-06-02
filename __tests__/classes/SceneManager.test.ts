@@ -96,13 +96,6 @@ when(readFileSyncMock)
   .calledWith(readConfigPath, "utf-8")
   .mockReturnValue(JSON.stringify(testConfigEnabled));
 
-// Current thoughts
-// Do I want to mock OBS and RL?
-// Could do one test with them mocked and one without to test full functionality (wouldn't that be integration testing?)
-// Should be testing to make sure that when an event comes through, the correct method is called with the correct parameters
-// Why do mocks need to be outside describe?
-// Should integration test be its own file?
-
 jest.mock("../../src/classes/OBSConnection", () => {
   return jest.fn().mockImplementation(() => { 
     return { 
@@ -135,7 +128,7 @@ describe("SceneManager", () => {
     jest.useRealTimers();
   });
 
-  it("should initialize the sceneManager correctly", () => {
+  it("should initialize the sceneManager object correctly", () => {
     const sceneManager = new SceneManager(configPathEnabled);
 
     expect(fs.readFileSync).toHaveBeenCalledTimes(1);
