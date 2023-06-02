@@ -2,13 +2,12 @@
  * File:          RocketLeagueConnection.ts
  * Author:        Travis Roy
  * Date Created:  Dec 27, 2022
- * Date Modified: May 5, 2023
+ * Date Modified: May 31, 2023
  * Description:   Contains the class for communication to Rocket League
  */
 
 import WebSocket from "ws";
 import * as fsNode from "fs";
-import path from "path";
 
 import { sleep, getKeyByValueGameState } from "../utils";
 import { GameStateEvent } from "../constants";

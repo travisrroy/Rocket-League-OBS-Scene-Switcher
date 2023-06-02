@@ -2,12 +2,11 @@
  * File:          OBSConnection.ts
  * Author:        Travis Roy
  * Date Created:  Dec 27, 2022
- * Date Modified: May 5, 2023
+ * Date Modified: May 31, 2023
  * Description:   Contains the class for communication to OBS
  */
 
 import * as fsNode from "fs";
-import path from "path";
 import OBSWebSocket, { OBSResponseTypes } from "obs-websocket-js";
 import { sleep } from "../utils";
 import type { Config, Scene } from "../types";

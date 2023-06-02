@@ -1,8 +1,8 @@
 /**
  * File:          SceneManager.ts
  * Author:        Travis Roy
- * Date Created:  May 29th, 2023
- * Date Modified: May 29th, 2023
+ * Date Created:  May 29, 2023
+ * Date Modified: May 31, 2023
  * Description:   The main class that controls the OBS scenes based on Rocket League events
  */
 
