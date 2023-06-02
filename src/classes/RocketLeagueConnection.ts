@@ -6,7 +6,7 @@
  * Description:   Contains the class for communication to Rocket League
  */
 
-import WebSocket from "ws";
+import WebSocket, { MessageEvent } from "ws";
 import * as fsNode from "fs";
 
 import { sleep, getKeyByValueGameState } from "../utils";
@@ -20,27 +20,33 @@ import type { Config, GameState, GoalScored, MatchEnded } from "../types";
  * @description The class that handles the connection to Rocket League
  */
 export default class RocketLeagueConnection {
-  private config: Config;
-  private hostname: string;
-  private port: number;
-  private client: WebSocket | null;
-  private callback: (event: GameStateEvent, data: GameState) => void;
+  private _config: Config;
+  private _hostname: string;
+  private _port: number;
+  private _client: WebSocket | null;
+  private _callback: (event: GameStateEvent, data: GameState) => void;
   
   constructor(configPath: string, eventCallback: (event: GameStateEvent, data: GameState) => void) {
     try {
       // Read from JSON configuration file
-      this.config = JSON.parse(fsNode.readFileSync(configPath, "utf-8"));
+      this._config = JSON.parse(fsNode.readFileSync(configPath, "utf-8"));
     }
     catch (e) {
       console.log(e);
       process.exit(1);
     }
 
-    this.hostname = this.config.connections.RLHostname;
-    this.port = this.config.connections.RLPort;
-    this.client = null;
-    this.callback = eventCallback;
+    this._hostname = this._config.connections.RLHostname;
+    this._port = this._config.connections.RLPort;
+    this._client = null;
+    this._callback = eventCallback;
   }
+
+  get config() { return this._config }
+  get hostname() { return this._hostname }
+  get port() { return this._port }
+  get client() { return this._client }
+  get callback() { return this._callback }
 
 
 
@@ -49,35 +55,37 @@ export default class RocketLeagueConnection {
    * @description Start and manage the connection to Rocket League's websocket server
    */
   init = () => {
-    this.client = new WebSocket(`ws://${this.hostname}:${this.port}`);
+    this._client = new WebSocket(`ws://${this._hostname}:${this._port}`);
 
-    this.client.onopen = () => {
-      console.log(`Connected to Rocket League on ${this.hostname}`);
+    this._client.onopen = () => {
+      console.log(`Connected to Rocket League on ${this._hostname}`);
     }
 
-    this.client.on("message", (d: string) => {
+    this._client.onmessage = (d: MessageEvent) => {
       try {
-        const { event, data }: { event: string, data: any } = JSON.parse(d);
+        const { event, data }: { event: string, data: any } = JSON.parse(d.data.toString());
         const eventEnum = GameStateEvent[getKeyByValueGameState(event) as keyof typeof GameStateEvent];
         
-        this.callback(eventEnum, data);
+        this._callback(eventEnum, data);
       }
       catch (err) {
         console.log("Error processing message");
       }
-    });
+    }
 
-    this.client.on("close", async() => {
-      if(this.client?.readyState === WebSocket.CLOSED) {
+    this._client.onclose = async() => {
+      if(this._client?.readyState === WebSocket.CLOSED) {
         console.log("Rocket League WebSocket Server Closed. Attempting to reconnect...");
+        
         await sleep(5000);
         this.init();
       }
-    })
+    }
 
-    this.client.on("error", async() => {
-      console.log("Error connecting to Rocket League");
+    this._client.onerror = async() => {
+      console.log("Error connecting to Rocket League. Please ensure your config is correct!");
+
       await sleep(5000);
-    });
+    }
   }
 }

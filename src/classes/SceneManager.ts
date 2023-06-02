@@ -47,37 +47,14 @@ export default class SceneManager {
     this._lastUpdate = new Date().getTime();
   }
 
-  get config() {
-    return this._config
-  }
-
-  get configPath() {
-    return this._configPath;
-  }
-
-  get obsConn() {
-    return this._obsConn;
-  }
-
-  get rlConn() {
-    return this._rlConn;
-  }
-
-  get gameState() {
-    return this._gameState;
-  }
-
-  get replayWillEnd() {
-    return this._replayWillEnd;
-  }
-
-  set replayWillEnd(value: boolean) {
-    this._replayWillEnd = value;
-  }
-
-  get lastUpdate() {
-    return this._lastUpdate;
-  }
+  get config() { return this._config }
+  get configPath() { return this._configPath }
+  get obsConn() { return this._obsConn }
+  get rlConn() { return this._rlConn }
+  get gameState() { return this._gameState }
+  get replayWillEnd() { return this._replayWillEnd }
+  set replayWillEnd(value: boolean) { this._replayWillEnd = value }
+  get lastUpdate() { return this._lastUpdate }
   
   
 
