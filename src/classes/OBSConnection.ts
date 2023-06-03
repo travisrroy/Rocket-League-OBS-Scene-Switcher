@@ -2,18 +2,14 @@
  * File:          OBSConnection.ts
  * Author:        Travis Roy
  * Date Created:  Dec 27, 2022
- * Date Modified: May 5, 2023
+ * Date Modified: May 31, 2023
  * Description:   Contains the class for communication to OBS
  */
 
 import * as fsNode from "fs";
-import path from "path";
 import OBSWebSocket, { OBSResponseTypes } from "obs-websocket-js";
 import { sleep } from "../utils";
 import type { Config, Scene } from "../types";
-
-const fs = fsNode.promises;
-const configPath = path.resolve(".", "./src/config.json");
 
 
 /**
@@ -21,29 +17,36 @@ const configPath = path.resolve(".", "./src/config.json");
  * @description The class that handles the connection to OBS
  */
 export default class OBSConnection {
-  private config: Config;
-  private hostname: string;
-  private port: number;
-  private auth: string;
-  private client: OBSWebSocket;
-  private scenes: string[];
+  private _config: Config;
+  private _hostname: string;
+  private _port: number;
+  private _auth: string;
+  private _client: OBSWebSocket;
+  private _scenes: string[];
 
-  constructor() {
+  constructor(configPath: string) {
     try {
       // Read from JSON configuration file
-      this.config = JSON.parse(fsNode.readFileSync(configPath, "utf-8"));
+      this._config = JSON.parse(fsNode.readFileSync(configPath, "utf-8"));
     }
     catch (e) {
       console.log(e);
       process.exit(1);
     }
 
-    this.hostname = this.config.connections.OBSHostname;
-    this.port = this.config.connections.OBSPort;
-    this.auth = this.config.connections.OBSAuth;
-    this.client = new OBSWebSocket();
-    this.scenes = [];
+    this._hostname = this._config.connections.OBSHostname;
+    this._port = this._config.connections.OBSPort;
+    this._auth = this._config.connections.OBSAuth;
+    this._client = new OBSWebSocket();
+    this._scenes = [];
   }
+
+  get config() { return this._config }
+  get hostname() { return this._hostname }
+  get port() { return this._port }
+  get auth() { return this._auth }
+  get client() { return this._client }
+  get scenes() { return this._scenes }
 
 
 
@@ -53,18 +56,22 @@ export default class OBSConnection {
    */
   init = async() => {
     try {
-      await this.client.connect(`ws://${this.hostname}:${this.port}`, this.auth);
+      await this._client.connect(`ws://${this._hostname}:${this._port}`, this._auth);
       console.log("Connected to OBS");
 
       // Populating the scene list
-      const rawSceneList = await this.client.call("GetSceneList");
-      this.parseScenes(rawSceneList);
+      const rawSceneList = await this._client.call("GetSceneList");
+      const cleanScenes = this.parseScenes(rawSceneList);
+
+      if (cleanScenes) {
+        this._scenes = cleanScenes;
+      }
     }
     catch (error: any) {
       console.error('Failed to connect', error.code, error.message);
     }
 
-    this.client.on("ConnectionClosed", async() => {
+    this._client.on("ConnectionClosed", async() => {
       console.log("OBS WebSocket Server Closed. Attempting to reconnect...");
       await sleep(5000);
       this.init();
@@ -80,14 +87,13 @@ export default class OBSConnection {
    * @param rawSceneList The raw scenes from 
    * @returns 
    */
-  private parseScenes = (rawSceneList: OBSResponseTypes['GetSceneList']) => {
+  parseScenes = (rawSceneList: OBSResponseTypes['GetSceneList']) => {
     let maybeMatchArr: string[] = []; // Stores the string endings after the space
     let indexArr: number[] = []; // Holds the index of where there are matched endings
     let cleanArr: string[] = [];
 
     // The Scene type is explicitly defined rather than using JsonObject
-    // @ts-ignore
-    const sceneList: Scene[] = rawSceneList.scenes;
+    const sceneList: Scene[] = JSON.parse(JSON.stringify(rawSceneList.scenes));
 
     if (sceneList === undefined || sceneList.length < 1) return;
   
@@ -124,8 +130,7 @@ export default class OBSConnection {
       cleanArr.push(`{teamName} ${dupeArr[i]}`);
     }
   
-    // Copying to the stored array
-    this.scenes = [...cleanArr];
+    return [...cleanArr];
   }
 
 
@@ -136,15 +141,17 @@ export default class OBSConnection {
    * @returns The list of parsed scenes
    */
   getScenes = async() => {
+    let cleanScenes: string[];
+
     try {
       const rawSceneList = await this.client.call("GetSceneList");
-      this.parseScenes(rawSceneList);
+      cleanScenes = this.parseScenes(rawSceneList)!;
     }
     catch (error: any) {
       console.error('Failed to connect', error.code, error.message);
     }
 
-    return this.scenes;
+    return cleanScenes!;
   }
 
 
@@ -157,7 +164,7 @@ export default class OBSConnection {
   setScene = (sceneName: string, sceneDelay: number) => {
     setTimeout(async() => { 
       try {
-        await this.client.call("SetCurrentProgramScene", {
+        await this._client.call("SetCurrentProgramScene", {
           "sceneName": sceneName
         });
       }

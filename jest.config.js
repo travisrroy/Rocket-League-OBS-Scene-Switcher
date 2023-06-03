@@ -11,5 +11,15 @@ module.exports = {
   ],
   testPathIgnorePatterns: [
     '<rootDir>/Archive/'
-  ]
+  ],
+  reporters: [
+    "default",
+    [
+      "./node_modules/jest-html-reporter",
+      {
+        "pageTitle": "Test Report"
+      }
+    ]
+  ],
+  collectCoverage: true
 };
