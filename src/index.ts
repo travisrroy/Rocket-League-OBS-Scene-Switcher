@@ -9,7 +9,7 @@
 import path from "path";
 import SceneManager from "./classes/SceneManager";
 
-const configPath = path.resolve(".", "./src/config.json");
+const configPath = path.resolve(".", "./config.json");
 
 const app = new SceneManager(configPath);
 app.init();

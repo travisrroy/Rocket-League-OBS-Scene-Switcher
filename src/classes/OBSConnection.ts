@@ -68,7 +68,7 @@ export default class OBSConnection {
       }
     }
     catch (error: any) {
-      console.error('Failed to connect', error.code, error.message);
+      console.error('Failed to connect to OBS', error.code, error.message);
     }
 
     this._client.on("ConnectionClosed", async() => {

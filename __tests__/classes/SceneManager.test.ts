@@ -100,7 +100,7 @@ jest.mock("../../src/classes/OBSConnection", () => {
   return jest.fn().mockImplementation(() => { 
     return { 
       default: jest.fn(),
-      init: jest.fn(() => Promise<void>),
+      init: jest.fn(() => { return Promise<void> }),
       setScene: jest.fn((sceneName: string, sceneDelay: number) => { return })
     }
   });

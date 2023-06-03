@@ -1,11 +1,8 @@
 import fs from "fs";
 import { when } from "jest-when";
-import WS from "jest-websocket-mock";
 
 import OBSConnection from "../../src/classes/OBSConnection";
-import { sleep } from "../../src/utils";
 import OBSWebSocket, { OBSResponseTypes } from "obs-websocket-js";
-import { BaseOBSWebSocket } from "obs-websocket-js/dist/base";
 
 const configPath = "./config";
 const config = {

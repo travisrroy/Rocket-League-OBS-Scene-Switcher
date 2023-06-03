@@ -6,3 +6,5 @@
 Archive
 coverage
 test-report.html
+build
+*.exe
