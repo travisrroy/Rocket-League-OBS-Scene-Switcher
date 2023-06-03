@@ -5,7 +5,9 @@
   "main": "index.ts",
   "scripts": {
     "test": "jest --coverage",
-    "start": "npx nodemon ./src/index.ts"
+    "start": "npx nodemon ./src/index.ts",
+    "build": "rimraf build && tsc --project tsconfig.build.json",
+    "package": "pkg ./build/src/index.js --targets node18-win-x64 --out-path dist"
   },
   "keywords": [],
   "author": "",
@@ -13,7 +15,7 @@
   "devDependencies": {
     "@types/jest": "^29.5.1",
     "@types/jest-when": "^3.5.2",
-    "@types/node": "^20.2.4",
+    "@types/node": "^20.2.5",
     "@types/ws": "^8.5.4",
     "jest-html-reporter": "^3.10.0",
     "jest-websocket-mock": "^2.4.0",
@@ -26,6 +28,8 @@
     "jest-when": "^3.5.2",
     "lodash": "^4.17.21",
     "obs-websocket-js": "^5.0.3",
+    "pkg": "^5.8.1",
+    "rimraf": "^5.0.1",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "ws": "^8.13.0"

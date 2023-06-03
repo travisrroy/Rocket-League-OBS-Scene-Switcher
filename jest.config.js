@@ -10,7 +10,8 @@ module.exports = {
     '**/?(*.)(spec|test).(js|ts)'
   ],
   testPathIgnorePatterns: [
-    '<rootDir>/Archive/'
+    '<rootDir>/Archive/',
+    '<rootDir>/build/'
   ],
   reporters: [
     "default",
