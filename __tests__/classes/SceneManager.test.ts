@@ -170,7 +170,8 @@ describe("SceneManager", () => {
 
     await sceneManager.read_config();
     
-    // Using jest-when adds 3 calls on top of the expected 2
+    // Using jest-when and Jest fake timers add 3 calls (2 and 1 respectfully)
+    // Our expected from read_config is 2
     expect(readFileSyncMock).toHaveBeenCalledTimes(5);
     expect(sceneManager.config).toEqual(expectedConfig);
   });

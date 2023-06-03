@@ -32,13 +32,15 @@ jest.mock("../../src/utils", () => {
   }
 });
 
-let rlConn: RocketLeagueConnection;
-
 describe("RocketLeagueConnection", () => {
+  let rlConn: RocketLeagueConnection;
+  let webSocketServer: WS;
+
   beforeEach(() => {
     jest.clearAllMocks();
 
     rlConn = new RocketLeagueConnection(configPath, mockCallback);
+    webSocketServer = new WS(`ws://${config.connections.RLHostname}:${config.connections.RLPort}`);
   });
 
   afterEach(() => {
@@ -58,8 +60,6 @@ describe("RocketLeagueConnection", () => {
   });
 
   it("should connect to the websocket server and send a log message", async() => {
-    const webSocketServer = new WS(`ws://${config.connections.RLHostname}:${config.connections.RLPort}`);
-
     console.log = jest.fn();
 
     rlConn.init();
@@ -70,7 +70,6 @@ describe("RocketLeagueConnection", () => {
   });
 
   it("should call the callback with the proper events", async() => {
-    const webSocketServer = new WS(`ws://${config.connections.RLHostname}:${config.connections.RLPort}`);
     const eventArr = Object.values(GameStateEvent);
 
     rlConn.init();
@@ -90,9 +89,6 @@ describe("RocketLeagueConnection", () => {
   });
 
   it("should handle an improper message received from the websocket", async() => {
-    const webSocketServer = new WS(`ws://${config.connections.RLHostname}:${config.connections.RLPort}`);
-    const eventArr = Object.values(GameStateEvent);
-
     rlConn.init();
     await webSocketServer.connected;
 
@@ -103,8 +99,6 @@ describe("RocketLeagueConnection", () => {
   });
 
   it("should close gracefully, wait 5 seconds, and call init to attempt to connect", async() => {
-    const webSocketServer = new WS(`ws://${config.connections.RLHostname}:${config.connections.RLPort}`);
-
     rlConn.init();
     await webSocketServer.connected;
 
@@ -115,16 +109,14 @@ describe("RocketLeagueConnection", () => {
     webSocketServer.close();
     await webSocketServer.closed;
 
-    const expectedTime = 5000;
+    const expectedSleep = 5000;
 
     expect(console.log).toHaveBeenCalledWith("Rocket League WebSocket Server Closed. Attempting to reconnect...");
-    expect(sleep).toBeCalledWith(expectedTime);
+    expect(sleep).toBeCalledWith(expectedSleep);
     expect(rlConn.init).toBeCalledTimes(1);
   });
 
   it("should catch error, wait 5 seconds, and init to attempt to connect", async() => {
-    const webSocketServer = new WS(`ws://${config.connections.RLHostname}:${config.connections.RLPort}`);
-
     rlConn.init();
     await webSocketServer.connected;
 
@@ -134,9 +126,9 @@ describe("RocketLeagueConnection", () => {
 
     webSocketServer.error({ reason: "Incorrect credentials", wasClean: false, code: 1 });
 
-    const expectedTime = 5000;
+    const expectedSleep = 5000;
 
     expect(console.log).toHaveBeenCalledWith("Error connecting to Rocket League. Please ensure your config is correct!");
-    expect(sleep).toBeCalledWith(expectedTime);
+    expect(sleep).toBeCalledWith(expectedSleep);
   });
 });
