@@ -106,60 +106,60 @@ Doing this will allow us to control OBS with the Rocket League OBS Scene Switche
 
 ![OBS Enable WebSocket](./docs/images/OBS%20Enable%20Websocket.png)
 
-3. **This information is what will be used in the Configuration Tool later in the next step, so don't close it!**
+3. **The password will be used in the Configuration Tool later in the next step, so don't close it!**
 
 ![OBS WebSocket Info](./docs/images/OBS%20Websocket%20Info.png)
 
-## Running the tests
 
-Explain how to run the automated tests for this system
+## Using Rocket League OBS Scene Switcher
 
-### Break down into end to end tests
+### Using the Configuration Tool
+This tool is used to change the behaviour of the scene switcher when it receives an event from Rocket League.
 
-Explain what these tests test and why
+At the top of the application, we have the connections information. The only thing that should need to be changed is the password for the OBS WebSocket Server. 
 
-```
-Give an example
-```
+![Config Tool Connections](./docs/images/Config%20Tool%20Connections.png)
 
-### And coding style tests
+After you insert your password, you can click the `Connect to OBS` button and it shoud connect.
 
-Explain what these tests test and why
+![Config Tool Connected](./docs/images/Config%20Tool%20Connected.png)
 
-```
-Give an example
-```
+- Event: The event received from Rocket League
+- Scene: The scene that you want OBS to transition to after the event occurs
+- Delay: The time (in milliseconds) that you want the program to delay before the transition occurs
+- Enabled: Provides the ability to completely disable that event from affecting OBS
 
-## Deployment
+**NOTE**: The program will read the config every 2.5 seconds so any changes applied here will be applied in realtime. 
 
-Add additional notes about how to deploy this on a live system
+You should notice that there is a {teamName} placeholder for `Goal Scored` and for `Match Ended` events. This allows you to have custom scenes based on the team that scored the goal or won the game. 
+
+Here is my example scene list:
+
+![OBS Scene List](./docs/images/OBS%20Scene%20List.png)
+
+This means that if the Bluey team scored a goal, the {teamName} Replay would be changed to Bluey Replay. 
+
+If you do not want this functionality, and just want to transition to a single scene, just change the name to name of the scene you want it to transition to.
+
+### Using the Scene Switcher
+If all has gone well, you should see that both OBS and Rocket League have connected, as seen below.
+
+![Scene Switcher Connected](./docs/images/Scene%20Switcher%20Connected.png)
 
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+* [obs-websocket-js](https://github.com/obs-websocket-community-projects/obs-websocket-js) - The websocket for communicating with OBS
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Travis Roy** - *Initial work* - [travisrroy](https://github.com/travisrroy)
 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE.md](LICENSE.md) file for details
 
 ## Acknowledgments
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc  
+* Inspiration was from a project called Codename: Covert in which the SOS plugin was used
