@@ -18,12 +18,12 @@ namespace ConfigurationTool
 			InitializeComponent();
 			_obs = new OBSWebsocket();
 
-            if (!File.Exists("configuration.json"))
+            if (!File.Exists("config.json"))
 			{
-                File.Create("configuration.json");
+                File.Create("config.json");
 			}
 
-            string json = File.ReadAllText("configuration.json");
+            string json = File.ReadAllText("config.json");
             configOptions = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
 
             DisableTable(this);
@@ -37,18 +37,18 @@ namespace ConfigurationTool
         private void populateConnections()
 		{
             string obsHostname = Convert.ToString(configOptions["connections"]["OBSHostname"]);
-            string[] obsHostnameSplit = obsHostname.Split(':');
+            string obsPort = Convert.ToString(configOptions["connections"]["OBSPort"]);
             string obsAuth = Convert.ToString(configOptions["connections"]["OBSAuth"]);
 
-            obs_ip.Text = obsHostnameSplit[0];
-            obs_port.Text = obsHostnameSplit[1];
+            obs_ip.Text = obsHostname;
+            obs_port.Text = obsPort;
             obs_password.Text = obsAuth;
 
-            string rlHostname = Convert.ToString(configOptions["connections"]["RocketLeagueHostname"]);
-            string[] rlHostnameSplit = rlHostname.Split(':');
+            string rlHostname = Convert.ToString(configOptions["connections"]["RLHostname"]);
+			string rlPort = Convert.ToString(configOptions["connections"]["RLPort"]);
 
-            rl_ip.Text = rlHostnameSplit[0];
-            rl_port.Text = rlHostnameSplit[1];
+            rl_ip.Text = rlHostname;
+            rl_port.Text = rlPort;
         }
 
         // Disabling all controls in the table
@@ -299,7 +299,7 @@ namespace ConfigurationTool
                 configOptions["scenes"][eventName] = control.Text;
 
                 string output = Newtonsoft.Json.JsonConvert.SerializeObject(configOptions, Newtonsoft.Json.Formatting.Indented);
-                File.WriteAllText("configuration.json", output);
+                File.WriteAllText("config.json", output);
             }
         }
 
@@ -318,7 +318,7 @@ namespace ConfigurationTool
                     configOptions["delays"][eventName] = delay;
 
                     string output = Newtonsoft.Json.JsonConvert.SerializeObject(configOptions, Newtonsoft.Json.Formatting.Indented);
-                    File.WriteAllText("configuration.json", output);
+                    File.WriteAllText("config.json", output);
                 }
             }
         }
@@ -336,7 +336,7 @@ namespace ConfigurationTool
                 configOptions["enable"][eventName] = enable;
 
                 string output = Newtonsoft.Json.JsonConvert.SerializeObject(configOptions, Newtonsoft.Json.Formatting.Indented);
-                File.WriteAllText("configuration.json", output);
+                File.WriteAllText("config.json", output);
             }
         }
 
@@ -364,7 +364,7 @@ namespace ConfigurationTool
             }
 
             string output = Newtonsoft.Json.JsonConvert.SerializeObject(configOptions, Newtonsoft.Json.Formatting.Indented);
-            File.WriteAllText("configuration.json", output);
+            File.WriteAllText("config.json", output);
         }
 
         // Whenever one of the rl's textboxes are changed, it updates the configuration
@@ -386,7 +386,7 @@ namespace ConfigurationTool
             }
 
             string output = Newtonsoft.Json.JsonConvert.SerializeObject(configOptions, Newtonsoft.Json.Formatting.Indented);
-            File.WriteAllText("configuration.json", output);
+            File.WriteAllText("config.json", output);
         }
 	}
 }
