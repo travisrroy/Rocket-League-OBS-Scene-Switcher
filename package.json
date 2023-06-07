@@ -7,7 +7,7 @@
     "test": "jest --coverage",
     "start": "npx nodemon ./src/index.ts",
     "build": "rimraf build && tsc --project tsconfig.build.json",
-    "package": "pkg ./build/src/index.js --targets node18-win-x64 --out-path dist"
+    "package": "pkg ./build/src/index.js --targets node18-win-x64 --out-path Releases/OBS"
   },
   "keywords": [],
   "author": "",
