@@ -142,7 +142,7 @@ This means that if the Bluey team scored a goal, the {teamName} Replay would be 
 If you do not want this functionality, and just want to transition to a single scene, just change the name to name of the scene you want it to transition to.
 
 ### Using the Scene Switcher
-If all has gone well, you should see that both OBS and Rocket League have connected, as seen below.
+If all has gone well, you can now run the `Scene-Switcher.exe` program. You should see that both OBS and Rocket League have connected, as seen below.
 
 ![Scene Switcher Connected](./docs/images/Scene%20Switcher%20Connected.png)
 
