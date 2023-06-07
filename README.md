@@ -80,21 +80,35 @@ SOS - Overlay System
 9|Original dll code by gboddin, modified and extended by SimpleAOB
 ```
 
-A step by step series of examples that tell you how to get a development env running
+5. **The final step to getting the SOS plugin working in BakkesMod is to tell BakkesMod to load the plugin. To do this, we will need to go back to the BakkesMod folder and go into the cfg (config) flolder.**
 
-Say what the step will be
+![Config Folder](./docs/images/BakkesMod%20Config%20Folder.png)
 
-```
-Give the example
-```
+In here, we need to open the `plugins.cfg` file in notepad.
 
-And repeat
+![Inside Config](./docs/images/BakkesMod%20Inside%20Config.png)
 
-```
-until finished
-```
+And then we add `plugin load sos` to the line above `writeplugins`.
 
-End with an example of getting some data out of the system or using it for a little demo
+![Load SOS](./docs/images/BakkesMod%20Load%20SOS.png)
+
+
+### Configuring OBS
+Doing this will allow us to control OBS with the Rocket League OBS Scene Switcher.
+
+1. **Open OBS and go to the `Tools` dropdown in the menu bar and the click `WebSocket Server Settings`**
+
+**NOTE**: If `WebSocket Server Settings` is not an option, your OBS is out of date and should be updated to version 28 or newer!
+
+![OBS Tools](./docs/images/OBS%20Tools.png)
+
+2. **We now need to enable the WebSocket server that this program will interact with. Click the checkbox to enable the server and then click on `Show Connect Info`.**
+
+![OBS Enable WebSocket](./docs/images/OBS%20Enable%20Websocket.png)
+
+3. **This information is what will be used in the Configuration Tool later in the next step, so don't close it!**
+
+![OBS WebSocket Info](./docs/images/OBS%20Websocket%20Info.png)
 
 ## Running the tests
 
