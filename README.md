@@ -1,6 +1,6 @@
 # Rocket League OBS Scene Switcher
 
-An automated way to switch OBS scenes based on events in Rocket League. This uses the SOS plugin developed first by SimpleAOB and taken over by Eoin Bathurst, which is located here: [SOS Plugin](https://github.com/SilentEchoGM/sos-monorepo/tree/main/packages/release/sos-plugin).
+An automated way to switch OBS scenes based on events in Rocket League using WebSockets and Node.js. This uses the SOS plugin developed first by SimpleAOB and taken over by Eoin Bathurst, which is located here: [SOS Plugin](https://github.com/SilentEchoGM/sos-monorepo/tree/main/packages/release/sos-plugin).
 
 
 ## Getting Started
