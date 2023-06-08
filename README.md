@@ -154,8 +154,6 @@ If all has gone well, you can now run the `Scene-Switcher.exe` program. You shou
 
 * **Travis Roy** - *Initial work* - [travisrroy](https://github.com/travisrroy)
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
 ## License
 
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE.md](LICENSE.md) file for details
